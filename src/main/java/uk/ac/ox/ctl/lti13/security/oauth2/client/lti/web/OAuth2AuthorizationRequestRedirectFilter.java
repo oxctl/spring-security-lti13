@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.ac.ox.ctl.lti13;
+package uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.client.ClientAuthorizationRequiredException;
@@ -79,24 +79,12 @@ import java.io.IOException;
  * @see <a target="_blank" href="https://tools.ietf.org/html/rfc6749#section-4.2.1">Section 4.2.1 Authorization Request (Implicit)</a>
  */
 public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilter {
-	/**
-	 * The default base {@code URI} used for authorization requests.
-	 */
-	public static final String DEFAULT_AUTHORIZATION_REQUEST_BASE_URI = "/oauth2/authorization";
+
 	private final ThrowableAnalyzer throwableAnalyzer = new DefaultThrowableAnalyzer();
 	private final RedirectStrategy authorizationRedirectStrategy = new DefaultRedirectStrategy();
 	private OAuth2AuthorizationRequestResolver authorizationRequestResolver;
 	private AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository =
 		new HttpSessionOAuth2AuthorizationRequestRepository();
-
-	/**
-	 * Constructs an {@code OAuth2AuthorizationRequestRedirectFilter} using the provided parameters.
-	 *
-	 * @param clientRegistrationRepository the repository of client registrations
-	 */
-	public OAuth2AuthorizationRequestRedirectFilter(ClientRegistrationRepository clientRegistrationRepository) {
-		this(clientRegistrationRepository, DEFAULT_AUTHORIZATION_REQUEST_BASE_URI);
-	}
 
 	/**
 	 * Constructs an {@code OAuth2AuthorizationRequestRedirectFilter} using the provided parameters.
