@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * This takes the target link out of the original saved request.
+ * This looks for the target URI in the final request (as it's signed by the platform).
  */
 public class TargetLinkUriAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
