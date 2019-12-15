@@ -83,7 +83,6 @@ public class Lti13Configurer  extends AbstractHttpConfigurer<Lti13Configurer, Ht
         OAuth2LoginAuthenticationFilter loginFilter = new OAuth2LoginAuthenticationFilter(clientRegistrationRepository, ltiPath+ loginPath);
         // This is to redirect things back the frontend
         TargetLinkUriAuthenticationSuccessHandler successHandler = new TargetLinkUriAuthenticationSuccessHandler();
-        successHandler.setTargetUrlParameter("target_link_uri");
         loginFilter.setAuthenticationSuccessHandler(successHandler);
         ProviderManager authenticationManager = new ProviderManager(Collections.singletonList(oidcLaunchFlowAuthenticationProvider));
         if (applicationEventPublisher != null) {
