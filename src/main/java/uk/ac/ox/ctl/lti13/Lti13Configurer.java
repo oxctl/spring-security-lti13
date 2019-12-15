@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
@@ -29,20 +30,36 @@ import java.util.Collections;
  * <li>{@link ClientRegistrationRepository}</li>
  * </ul>
  */
-public class Lti13Configurer  extends AbstractHttpConfigurer<Lti13Configurer, HttpSecurity> {
+public class Lti13Configurer extends AbstractHttpConfigurer<Lti13Configurer, HttpSecurity> {
 
-    private final String loginPath = "/login";
-    private final String loginInitiationPath = "/login_initiation";
     private String ltiPath = "/lti";
+    private String loginPath = "/login";
+    private String loginInitiationPath = "/login_initiation";
     private ApplicationEventPublisher applicationEventPublisher;
+    private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
 
     public Lti13Configurer ltiPath(String ltiPath) {
         this.ltiPath = ltiPath;
         return this;
     }
 
+    public Lti13Configurer loginPath(String loginPath) {
+        this.loginPath = loginPath;
+        return this;
+    }
+
+    public Lti13Configurer loginInitiationPath(String loginInitiationPath) {
+        this.loginInitiationPath = loginInitiationPath;
+        return this;
+    }
+
     public Lti13Configurer applicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
         this.applicationEventPublisher = applicationEventPublisher;
+        return this;
+    }
+
+    public Lti13Configurer grantedAuthoritiesMapper(GrantedAuthoritiesMapper grantedAuthoritiesMapper) {
+        this.grantedAuthoritiesMapper = grantedAuthoritiesMapper;
         return this;
     }
 
@@ -67,10 +84,14 @@ public class Lti13Configurer  extends AbstractHttpConfigurer<Lti13Configurer, Ht
 
         OidcLaunchFlowAuthenticationProvider oidcLaunchFlowAuthenticationProvider = new OidcLaunchFlowAuthenticationProvider();
         http.authenticationProvider(oidcLaunchFlowAuthenticationProvider);
-//        oidcLaunchFlowAuthenticationProvider.setAuthoritiesMapper(new LtiAuthoritiesMapper());
+        if (grantedAuthoritiesMapper != null) {
+            oidcLaunchFlowAuthenticationProvider.setAuthoritiesMapper(grantedAuthoritiesMapper);
+        }
         // This handles step 1 of the IMS SEC
-
+        // https://www.imsglobal.org/spec/security/v1p0/#step-1-third-party-initiated-login
         http.addFilterAfter(configureInitiationFilter(clientRegistrationRepository), LogoutFilter.class);
+        // This handles step 3 of the IMS SEC
+        // https://www.imsglobal.org/spec/security/v1p0/#step-3-authentication-response
         http.addFilterAfter(configureLoginFilter(clientRegistrationRepository, oidcLaunchFlowAuthenticationProvider), AbstractPreAuthenticatedProcessingFilter.class);
     }
 
@@ -80,9 +101,8 @@ public class Lti13Configurer  extends AbstractHttpConfigurer<Lti13Configurer, Ht
     }
 
     private OAuth2LoginAuthenticationFilter configureLoginFilter(ClientRegistrationRepository clientRegistrationRepository, OidcLaunchFlowAuthenticationProvider oidcLaunchFlowAuthenticationProvider) {
-        // This handles the actual login
         OAuth2LoginAuthenticationFilter loginFilter = new OAuth2LoginAuthenticationFilter(clientRegistrationRepository, ltiPath+ loginPath);
-        // This is to redirect things back the frontend
+        // This is to find the URL that we should redirect the user to.
         TargetLinkUriAuthenticationSuccessHandler successHandler = new TargetLinkUriAuthenticationSuccessHandler();
         loginFilter.setAuthenticationSuccessHandler(successHandler);
         ProviderManager authenticationManager = new ProviderManager(Collections.singletonList(oidcLaunchFlowAuthenticationProvider));
