@@ -22,7 +22,7 @@ import java.util.UUID;
  * This handles the initial part of the LTI 1.3 Resource Link Request and sends the browser back to the platform to
  * start the OAuth2 Implicit Flow.
  *
- * We will mount a copy of the Filter at /oauth2/login_initiation
+ * We will mount a copy of the Filter at /lti/login_initiation
  *
  * As this is currently targeting LTI 1.3 it will come back as a login to the OAuth2 filter.
  *
