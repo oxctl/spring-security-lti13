@@ -82,11 +82,7 @@ public class Lti13Configurer extends AbstractHttpConfigurer<Lti13Configurer, Htt
     public void configure(HttpSecurity http) {
         ClientRegistrationRepository clientRegistrationRepository = Lti13ConfigurerUtils.getClientRegistrationRepository(http);
 
-        OidcLaunchFlowAuthenticationProvider oidcLaunchFlowAuthenticationProvider = new OidcLaunchFlowAuthenticationProvider();
-        http.authenticationProvider(oidcLaunchFlowAuthenticationProvider);
-        if (grantedAuthoritiesMapper != null) {
-            oidcLaunchFlowAuthenticationProvider.setAuthoritiesMapper(grantedAuthoritiesMapper);
-        }
+        OidcLaunchFlowAuthenticationProvider oidcLaunchFlowAuthenticationProvider = configureAuthenticationProvider(http);
         // This handles step 1 of the IMS SEC
         // https://www.imsglobal.org/spec/security/v1p0/#step-1-third-party-initiated-login
         http.addFilterAfter(configureInitiationFilter(clientRegistrationRepository), LogoutFilter.class);
@@ -95,12 +91,22 @@ public class Lti13Configurer extends AbstractHttpConfigurer<Lti13Configurer, Htt
         http.addFilterAfter(configureLoginFilter(clientRegistrationRepository, oidcLaunchFlowAuthenticationProvider), AbstractPreAuthenticatedProcessingFilter.class);
     }
 
-    private OAuth2AuthorizationRequestRedirectFilter configureInitiationFilter(ClientRegistrationRepository clientRegistrationRepository) {
+    protected OidcLaunchFlowAuthenticationProvider configureAuthenticationProvider(HttpSecurity http) {
+        OidcLaunchFlowAuthenticationProvider oidcLaunchFlowAuthenticationProvider = new OidcLaunchFlowAuthenticationProvider();
+
+        http.authenticationProvider(oidcLaunchFlowAuthenticationProvider);
+        if (grantedAuthoritiesMapper != null) {
+            oidcLaunchFlowAuthenticationProvider.setAuthoritiesMapper(grantedAuthoritiesMapper);
+        }
+        return oidcLaunchFlowAuthenticationProvider;
+    }
+
+    protected OAuth2AuthorizationRequestRedirectFilter configureInitiationFilter(ClientRegistrationRepository clientRegistrationRepository) {
         OIDCInitiatingLoginRequestResolver resolver = new OIDCInitiatingLoginRequestResolver(clientRegistrationRepository, ltiPath+ loginInitiationPath);
         return new OAuth2AuthorizationRequestRedirectFilter(resolver);
     }
 
-    private OAuth2LoginAuthenticationFilter configureLoginFilter(ClientRegistrationRepository clientRegistrationRepository, OidcLaunchFlowAuthenticationProvider oidcLaunchFlowAuthenticationProvider) {
+    protected OAuth2LoginAuthenticationFilter configureLoginFilter(ClientRegistrationRepository clientRegistrationRepository, OidcLaunchFlowAuthenticationProvider oidcLaunchFlowAuthenticationProvider) {
         OAuth2LoginAuthenticationFilter loginFilter = new OAuth2LoginAuthenticationFilter(clientRegistrationRepository, ltiPath+ loginPath);
         // This is to find the URL that we should redirect the user to.
         TargetLinkUriAuthenticationSuccessHandler successHandler = new TargetLinkUriAuthenticationSuccessHandler();
