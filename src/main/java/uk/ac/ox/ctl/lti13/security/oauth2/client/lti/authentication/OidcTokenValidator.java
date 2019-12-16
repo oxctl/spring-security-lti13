@@ -19,6 +19,7 @@ package uk.ac.ox.ctl.lti13.security.oauth2.client.lti.authentication;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.util.CollectionUtils;
 
@@ -28,8 +29,10 @@ import java.util.List;
 
 /**
  * This needs to be update for the launch flow for IMS Sec 1.0
+ * We should refactor this so that it implements org.springframework.security.oauth2.core.OAuth2TokenValidator
  * @author Rob Winch
  * @since 5.1
+ * @see OAuth2TokenValidator
  */
 final class OidcTokenValidator {
 	private static final String INVALID_ID_TOKEN_ERROR_CODE = "invalid_id_token";
