@@ -37,6 +37,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoderJwkSupport;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestOperations;
 import uk.ac.ox.ctl.lti13.security.oauth2.core.endpoint.OIDCLaunchFlowResponse;
 
 import java.util.Collection;
@@ -71,6 +72,7 @@ public class OidcLaunchFlowAuthenticationProvider implements AuthenticationProvi
 	private static final String MISSING_SIGNATURE_VERIFIER_ERROR_CODE = "missing_signature_verifier";
 	private final Map<String, JwtDecoder> jwtDecoders = new ConcurrentHashMap<>();
 	private GrantedAuthoritiesMapper authoritiesMapper = (authorities -> authorities);
+	private RestOperations restOperations;
 
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -136,6 +138,15 @@ public class OidcLaunchFlowAuthenticationProvider implements AuthenticationProvi
 		this.authoritiesMapper = authoritiesMapper;
 	}
 
+	/**
+	 * Sets the {@link RestOperations} used to retrieve the JWKs URL.
+	 *
+	 * @param restOperations the {@link RestOperations} used to retrieve the JWKs URI.
+	 */
+	public final void setRestOperations(RestOperations restOperations) {
+		this.restOperations = restOperations;
+	}
+
 	@Override
 	public boolean supports(Class<?> authentication) {
 		return OIDCLaunchFlowToken.class.isAssignableFrom(authentication);
@@ -163,7 +174,11 @@ public class OidcLaunchFlowAuthenticationProvider implements AuthenticationProvi
 			}
 			// TODO This should look at the Cache-Control header so to expire old jwtDecoders.
 			// Canvas looks to rotate it's keys monthly.
-			jwtDecoder = new NimbusJwtDecoderJwkSupport(clientRegistration.getProviderDetails().getJwkSetUri());
+			NimbusJwtDecoderJwkSupport nimbusJwtDecoderJwkSupport = new NimbusJwtDecoderJwkSupport(clientRegistration.getProviderDetails().getJwkSetUri());
+			if (restOperations != null) {
+				nimbusJwtDecoderJwkSupport.setRestOperations(restOperations);
+			}
+			jwtDecoder = nimbusJwtDecoderJwkSupport;
 			this.jwtDecoders.put(clientRegistration.getRegistrationId(), jwtDecoder);
 		}
 		return jwtDecoder;
