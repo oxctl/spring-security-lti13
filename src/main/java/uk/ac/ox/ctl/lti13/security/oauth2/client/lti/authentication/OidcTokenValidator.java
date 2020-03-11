@@ -113,6 +113,7 @@ final class OidcTokenValidator {
 		// The Client SHOULD check the nonce value for replay attacks.
 		// The precise method for detecting replay attacks is Client specific.
 		// TODO Depends on gh-4442
+		// TODO Must validate this although the state is like a nonce.
 
 		// These are the LTI Claims that we check https://www.imsglobal.org/spec/lti/v1p3/#required-message-claims
 
