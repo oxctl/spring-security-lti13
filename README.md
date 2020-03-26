@@ -8,6 +8,16 @@ This library adds support to Spring Security to allow LTI 1.3 launches to authen
 
 This library uses [Spring Security](https://spring.io/projects/spring-security) and it's OAuth code as it's basis.
 
+## Using
+
+This [library](https://search.maven.org/artifact/uk.ac.ox.ctl/spring-security-lti13) is released to maven central and can be added to your maven project with the following project coordinates:
+
+    <dependency>
+        <groupId>uk.ac.ox.ctl</groupId>
+        <artifactId>spring-security-lti13</artifactId>
+        <version>0.0.1</version>
+    </dependency>
+
 ### Releasing
 
 This project is deployed to the central repository, once ready to release you can have the release plugin tag everything:
