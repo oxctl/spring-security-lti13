@@ -122,6 +122,12 @@ public class OIDCInitiatingLoginRequestResolver implements OAuth2AuthorizationRe
         if (ltiMessageHint != null) {
             additionalParameters.put("lti_message_hint", ltiMessageHint);
         }
+        
+        // These are additional parameters that we want to keep but they aren't part of the message
+        Map<String, Object> attributes = new HashMap<>();
+        // This is so that we can check the first and last requests of the login are from
+        // the same IP address.
+        attributes.put(StateAuthorizationRequestRepository.REMOTE_IP, request.getRemoteAddr());
 
         OAuth2AuthorizationRequest authorizationRequest = builder
                 .clientId(clientRegistration.getClientId())
@@ -130,6 +136,7 @@ public class OIDCInitiatingLoginRequestResolver implements OAuth2AuthorizationRe
                 .scopes(clientRegistration.getScopes())
                 .state(this.stateGenerator.generateKey())
                 .additionalParameters(additionalParameters)
+                .attributes(attributes)
                 .build();
 
         return authorizationRequest;

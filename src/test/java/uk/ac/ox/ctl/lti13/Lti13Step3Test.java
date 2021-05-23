@@ -13,7 +13,6 @@ import com.nimbusds.jwt.SignedJWT;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -102,12 +101,14 @@ public class Lti13Step3Test {
                 }
 
                 @Override
-                protected OAuth2LoginAuthenticationFilter configureLoginFilter(ClientRegistrationRepository clientRegistrationRepository, OidcLaunchFlowAuthenticationProvider oidcLaunchFlowAuthenticationProvider) {
+                protected OAuth2LoginAuthenticationFilter configureLoginFilter(ClientRegistrationRepository clientRegistrationRepository, OidcLaunchFlowAuthenticationProvider oidcLaunchFlowAuthenticationProvider, AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository) {
                     // This is so that we can put a fake original request into the repository so that the state between
                     // the fake request and out test request will match.
-                    OAuth2LoginAuthenticationFilter oAuth2LoginAuthenticationFilter = super.configureLoginFilter(clientRegistrationRepository, oidcLaunchFlowAuthenticationProvider);
+                    OAuth2LoginAuthenticationFilter oAuth2LoginAuthenticationFilter = super.configureLoginFilter(clientRegistrationRepository, oidcLaunchFlowAuthenticationProvider, authorizationRequestRepository);
                     // Set a custom request repository
-                    oAuth2LoginAuthenticationFilter.setAuthorizationRequestRepository(authorizationRequestRepository);
+                    oAuth2LoginAuthenticationFilter.setAuthorizationRequestRepository(
+                            CustomLti13Configuration.this.authorizationRequestRepository
+                    );
                     return oAuth2LoginAuthenticationFilter;
                 }
             };
