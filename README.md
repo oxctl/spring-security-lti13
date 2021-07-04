@@ -6,7 +6,7 @@ This library adds support to Spring Security to allow LTI 1.3 launches to authen
 
 ## Spring Security OAuth2
 
-This library uses [Spring Security](https://spring.io/projects/spring-security) and it's OAuth code as it's basis.
+This library uses [Spring Security](https://spring.io/projects/spring-security) and it's OAuth code as its basis.
 
 ## Using
 
@@ -18,9 +18,11 @@ This [library](https://search.maven.org/artifact/uk.ac.ox.ctl/spring-security-lt
         <version>0.0.1</version>
     </dependency>
 
+There is a [demo project](https://github.com/oxctl/spring-security-lti13-demo) built using this library that may be helpful in getting started with the project.
+
 ### Releasing
 
-This project is deployed to the central repository, once ready to release you can have the release plugin tag everything:
+The project is deployed to the central repository, once ready to release use the release plugin to tag everything:
 
     mvn -Prelease release:clean release:prepare
     
@@ -28,5 +30,5 @@ then if that completes successfully a release bundle can be pushed to the stagin
 
     mvn -Prelease release:perform
     
-We don't automatically close the staged artifacts so after checking that the files are ok you can login to the [repository](https://oss.sonatype.org/) and release it.
+We don't automatically close the staged artifacts so after checking that the files are ok you should login to the [repository](https://oss.sonatype.org/) and release it.
 
