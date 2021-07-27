@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.client.web.HttpSessionOAuth2Authoriza
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
+import uk.ac.ox.ctl.lti13.security.oauth2.OAuthAuthenticationFailureHandler;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.authentication.OidcLaunchFlowAuthenticationProvider;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.authentication.TargetLinkUriAuthenticationSuccessHandler;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OAuth2AuthorizationRequestRedirectFilter;
@@ -69,7 +70,10 @@ public class Lti13Configurer extends AbstractHttpConfigurer<Lti13Configurer, Htt
         this.grantedAuthoritiesMapper = grantedAuthoritiesMapper;
         return this;
     }
-    
+
+    /**
+     * @param useState if true then we don't use cookies, but use the state to track logins between requests.
+     */
     public Lti13Configurer useState(boolean useState) {
         this.useState = useState;
         return this;
@@ -84,12 +88,12 @@ public class Lti13Configurer extends AbstractHttpConfigurer<Lti13Configurer, Htt
     @Override
     public void init(HttpSecurity http) {
         // Allow LTI launches to bypass CSRF protection
-        CsrfConfigurer configurer = http.getConfigurer(CsrfConfigurer.class);
+        CsrfConfigurer<HttpSecurity> configurer = http.getConfigurer(CsrfConfigurer.class);
         if (configurer != null) {
             configurer.ignoringAntMatchers(ltiPath + "/**");
         }
         // In the future we should use CSP to limit the domains that can embed this tool
-        HeadersConfigurer headersConfigurer = http.getConfigurer(HeadersConfigurer.class);
+        HeadersConfigurer<HttpSecurity> headersConfigurer = http.getConfigurer(HeadersConfigurer.class);
         if (headersConfigurer != null) {
             headersConfigurer.frameOptions().disable();
         }
@@ -132,14 +136,19 @@ public class Lti13Configurer extends AbstractHttpConfigurer<Lti13Configurer, Htt
         OIDCInitiatingLoginRequestResolver resolver = new OIDCInitiatingLoginRequestResolver(clientRegistrationRepository, ltiPath+ loginInitiationPath);
         OAuth2AuthorizationRequestRedirectFilter filter = new OAuth2AuthorizationRequestRedirectFilter(resolver);
         filter.setAuthorizationRequestRepository(authorizationRequestRepository);
+        filter.setUseState(this.useState);
         return filter;
     }
 
     protected OAuth2LoginAuthenticationFilter configureLoginFilter(ClientRegistrationRepository clientRegistrationRepository, OidcLaunchFlowAuthenticationProvider oidcLaunchFlowAuthenticationProvider, AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository) {
+        // This filter handles the actual authentication and behaviour of errors
         OAuth2LoginAuthenticationFilter loginFilter = new OAuth2LoginAuthenticationFilter(clientRegistrationRepository, ltiPath+ loginPath);
         // This is to find the URL that we should redirect the user to.
-        TargetLinkUriAuthenticationSuccessHandler successHandler = new TargetLinkUriAuthenticationSuccessHandler();
+        TargetLinkUriAuthenticationSuccessHandler successHandler = new TargetLinkUriAuthenticationSuccessHandler(this.useState);
         loginFilter.setAuthenticationSuccessHandler(successHandler);
+        // This is just so that you can get better error messages when something goes wrong.
+        OAuthAuthenticationFailureHandler failureHandler = new OAuthAuthenticationFailureHandler();
+        loginFilter.setAuthenticationFailureHandler(failureHandler);
         loginFilter.setAuthorizationRequestRepository(authorizationRequestRepository);
         ProviderManager authenticationManager = new ProviderManager(Collections.singletonList(oidcLaunchFlowAuthenticationProvider));
         if (applicationEventPublisher != null) {

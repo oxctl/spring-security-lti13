@@ -42,7 +42,7 @@ import java.util.Collections;
  * @see OAuth2AccessToken
  * @see <a target="_blank" href="https://tools.ietf.org/html/rfc6749#section-4.1">Section 4.1 Authorization Code Grant Flow</a>
  */
-public class OIDCLaunchFlowToken extends AbstractAuthenticationToken {
+public class OidcLaunchFlowToken extends AbstractAuthenticationToken {
 	private static final long serialVersionUID = SpringSecurityCoreVersion.SERIAL_VERSION_UID;
 	private OidcUser principal;
 	private ClientRegistration clientRegistration;
@@ -54,7 +54,7 @@ public class OIDCLaunchFlowToken extends AbstractAuthenticationToken {
 	 * @param clientRegistration the client registration
 	 * @param authorizationExchange the authorization exchange
 	 */
-	public OIDCLaunchFlowToken(ClientRegistration clientRegistration,
+	public OidcLaunchFlowToken(ClientRegistration clientRegistration,
 							   OIDCLaunchFlowExchange authorizationExchange) {
 
 		super(Collections.emptyList());
@@ -75,7 +75,7 @@ public class OIDCLaunchFlowToken extends AbstractAuthenticationToken {
 	 * @param principal the user {@code Principal} registered with the OAuth 2.0 Provider
 	 * @param authorities the authorities granted to the user
 	 */
-	public OIDCLaunchFlowToken(ClientRegistration clientRegistration,
+	public OidcLaunchFlowToken(ClientRegistration clientRegistration,
 							   OIDCLaunchFlowExchange authorizationExchange,
 							   OidcUser principal,
 							   Collection<? extends GrantedAuthority> authorities) {

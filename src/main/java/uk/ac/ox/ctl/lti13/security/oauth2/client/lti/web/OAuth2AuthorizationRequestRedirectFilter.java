@@ -27,8 +27,6 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
-import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
-import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.util.ThrowableAnalyzer;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -85,6 +83,8 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
 	private OAuth2AuthorizationRequestResolver authorizationRequestResolver;
 	private AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository =
 		new HttpSessionOAuth2AuthorizationRequestRepository();
+	private AuthorizationRedirectHandler stateAuthorizationRedirectHandler = new StateAuthorizationRedirectHandler();
+	private boolean useState = false;
 
 	/**
 	 * Constructs an {@code OAuth2AuthorizationRequestRedirectFilter} using the provided parameters.
@@ -119,6 +119,13 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
 	public final void setAuthorizationRequestRepository(AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository) {
 		Assert.notNull(authorizationRequestRepository, "authorizationRequestRepository cannot be null");
 		this.authorizationRequestRepository = authorizationRequestRepository;
+	}
+
+	/**
+	 * @param useState if true then we should use the state parameter to track logins.
+	 */
+	public void setUseState(boolean useState) {
+		this.useState = useState;
 	}
 
 	@Override
@@ -177,8 +184,15 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
 			AuthorizationGrantType.IMPLICIT.equals(authorizationRequest.getGrantType())) {
 			this.authorizationRequestRepository.saveAuthorizationRequest(authorizationRequest, request, response);
 		}
-		this.authorizationRedirectStrategy.sendRedirect(request, response, authorizationRequest.getAuthorizationRequestUri());
-		// We don't need to save the request as the final URL to redirect to is in the claims normally we would save]
+		
+		if (this.useState) {
+			// Want to pass in the authorizationRequest so we can pass the state to the browser.
+			this.stateAuthorizationRedirectHandler.sendRedirect(request, response, authorizationRequest);
+		} else {
+			// Standard session based usage so we just do a normal browser redirect.
+			this.authorizationRedirectStrategy.sendRedirect(request, response, authorizationRequest.getAuthorizationRequestUri());
+		}
+		// We don't need to save the request as the final URL to redirect to is in the claims normally we would save
 		// the current request here.
 	}
 

@@ -34,7 +34,8 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.util.Assert;
-import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.authentication.OIDCLaunchFlowToken;
+import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.authentication.OidcLaunchFlowToken;
+import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.authentication.OidcAuthenticationToken;
 import uk.ac.ox.ctl.lti13.security.oauth2.core.endpoint.OIDCLaunchFlowExchange;
 import uk.ac.ox.ctl.lti13.security.oauth2.core.endpoint.OIDCLaunchFlowResponse;
 
@@ -145,20 +146,22 @@ public class OAuth2LoginAuthenticationFilter extends AbstractAuthenticationProce
                 .state(request.getParameter("state"))
                 .build();
 
-        OIDCLaunchFlowToken authenticationRequest = new OIDCLaunchFlowToken(
+        OidcLaunchFlowToken authenticationRequest = new OidcLaunchFlowToken(
                 clientRegistration, new OIDCLaunchFlowExchange(authorizationRequest, authorizationResponse));
         authenticationRequest.setDetails(this.authenticationDetailsSource.buildDetails(request));
 
-        OIDCLaunchFlowToken authenticationResult =
-                (OIDCLaunchFlowToken) this.getAuthenticationManager().authenticate(authenticationRequest);
+        OidcLaunchFlowToken authenticationResult =
+                (OidcLaunchFlowToken) this.getAuthenticationManager().authenticate(authenticationRequest);
 
-        // Is this the right thing to return?
-        OAuth2AuthenticationToken oauth2Authentication = new OAuth2AuthenticationToken(
+        // This is so that we can return the state to the client.
+        OidcAuthenticationToken oidcAuthenticationToken = new OidcAuthenticationToken(
                 authenticationResult.getPrincipal(),
                 authenticationResult.getAuthorities(),
-                authenticationResult.getClientRegistration().getRegistrationId());
+                authenticationResult.getClientRegistration().getRegistrationId(),
+                authorizationResponse.getState()
+        );
 
-        return oauth2Authentication;
+        return oidcAuthenticationToken;
     }
 
     static boolean isAuthorizationResponse(HttpServletRequest request) {

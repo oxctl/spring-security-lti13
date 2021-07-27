@@ -2,8 +2,8 @@ package uk.ac.ox.ctl.lti13.security.oauth2.client.lti.authentication;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import uk.ac.ox.ctl.lti13.lti.Claims;
+import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.StateCheckingAuthenticationSuccessHandler;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -11,7 +11,14 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * This looks for the target URI in the final request (as it's signed by the platform).
  */
-public class TargetLinkUriAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+public class TargetLinkUriAuthenticationSuccessHandler extends StateCheckingAuthenticationSuccessHandler {
+
+    /**
+     * @param useState if true then use the state parameter for tracking logins.
+     */
+    public TargetLinkUriAuthenticationSuccessHandler(boolean useState) {
+        super(useState);
+    }
 
     @Override
     protected String determineTargetUrl(HttpServletRequest request,

@@ -76,8 +76,8 @@ public class OidcLaunchFlowAuthenticationProvider implements AuthenticationProvi
 
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-		OIDCLaunchFlowToken authorizationCodeAuthentication =
-			(OIDCLaunchFlowToken) authentication;
+		OidcLaunchFlowToken authorizationCodeAuthentication =
+			(OidcLaunchFlowToken) authentication;
 
 		// Section 3.1.2.1 Authentication Request - https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
 		// scope
@@ -117,7 +117,7 @@ public class OidcLaunchFlowAuthenticationProvider implements AuthenticationProvi
 		Collection<? extends GrantedAuthority> mappedAuthorities =
 			this.authoritiesMapper.mapAuthorities(oidcUser.getAuthorities());
 
-		OIDCLaunchFlowToken authenticationResult = new OIDCLaunchFlowToken(
+		OidcLaunchFlowToken authenticationResult = new OidcLaunchFlowToken(
 			authorizationCodeAuthentication.getClientRegistration(),
 			authorizationCodeAuthentication.getAuthorizationExchange(),
 			oidcUser,
@@ -149,7 +149,7 @@ public class OidcLaunchFlowAuthenticationProvider implements AuthenticationProvi
 
 	@Override
 	public boolean supports(Class<?> authentication) {
-		return OIDCLaunchFlowToken.class.isAssignableFrom(authentication);
+		return OidcLaunchFlowToken.class.isAssignableFrom(authentication);
 	}
 
 	private OidcIdToken createOidcToken(ClientRegistration clientRegistration, String idToken) {
