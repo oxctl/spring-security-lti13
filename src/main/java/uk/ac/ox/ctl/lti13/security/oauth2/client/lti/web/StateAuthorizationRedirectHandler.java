@@ -4,18 +4,39 @@ import com.fasterxml.jackson.core.io.JsonStringEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+import uk.ac.ox.ctl.lti13.utils.StringReader;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+/**
+ * @see StateCheckingAuthenticationSuccessHandler
+ */
 public class StateAuthorizationRedirectHandler implements AuthorizationRedirectHandler {
 
 	private Logger logger = LoggerFactory.getLogger(StateAuthorizationRedirectHandler.class);
 
+	private final JsonStringEncoder encoder = JsonStringEncoder.getInstance();
+	private final String htmlTemplate;
+
+	private String name = "/uk/ac/ox/ctl/lti13/step-1-redirect.html";
+
+	public StateAuthorizationRedirectHandler() {
+		try {
+			htmlTemplate = StringReader.readString(getClass().getResourceAsStream(name));
+		} catch (IOException e) {
+			throw new IllegalStateException("Failed to read "+ name, e);
+		}
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	/**
-	 * This sends the user off, but before that it saves data in the user's browser's sessionStorage so that 
+	 * This sends the user off, but before that it saves data in the user's browser's sessionStorage so that
 	 * when they come back we can check that noting malicious is going on.
 	 */
 	public void sendRedirect(HttpServletRequest request, HttpServletResponse response, OAuth2AuthorizationRequest authorizationRequest) throws IOException {
@@ -24,25 +45,9 @@ public class StateAuthorizationRedirectHandler implements AuthorizationRedirectH
 			logger.debug("Response has already been committed. Unable to redirect to " + url);
 			return;
 		}
-		JsonStringEncoder encoder = JsonStringEncoder.getInstance();
-		String state = authorizationRequest.getState();
-		response.setContentType("text/html");
+		String state = new String(encoder.quoteAsString(authorizationRequest.getState()));
+		response.setContentType("text/html;charset=UTF-8");
 		PrintWriter writer = response.getWriter();
-		writer.append("<html><head><title>redirect</title><script>");
-		writer.append("var state = \""+ new String(encoder.quoteAsString(state)) + "\";");
-		writer.append("var url = \""+ new String(encoder.quoteAsString(url)) + "\";");
-		writer.append("try {\n" +
-				"    window.sessionStorage.setItem('state', state);\n" +
-				"} catch (error) {\n" +
-				"    if (error.name === 'SecurityError' ) {\n" +
-				"        console.log(\"You have cookies disabled for this site.\");\n" +
-				"    } else {\n" +
-				"        throw error;\n" +
-				"    }\n" +
-				"}");
-		writer.append("document.location = url;");
-		writer.append("</script></head><body>");
-		writer.append("</body></html>");
+		writer.append(htmlTemplate.replaceFirst("@@state@@", state).replaceFirst("@@url@@", url));
 	}
-
 }

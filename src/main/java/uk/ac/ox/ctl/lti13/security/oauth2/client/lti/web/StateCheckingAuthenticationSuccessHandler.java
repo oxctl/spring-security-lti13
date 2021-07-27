@@ -22,6 +22,7 @@ import org.springframework.security.web.WebAttributes;
 import org.springframework.security.web.authentication.AbstractAuthenticationTargetUrlRequestHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.authentication.OidcAuthenticationToken;
+import uk.ac.ox.ctl.lti13.utils.StringReader;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -35,18 +36,32 @@ import java.io.PrintWriter;
  * value saved at the start of the login.
  *
  * @author Matthew Buckett
+ * @see StateAuthorizationRedirectHandler
  */
 public class StateCheckingAuthenticationSuccessHandler extends
 		AbstractAuthenticationTargetUrlRequestHandler implements
 		AuthenticationSuccessHandler {
 
 	private final boolean useState;
+	private final JsonStringEncoder encoder = JsonStringEncoder.getInstance();
+	private final String htmlTemplate;
+	
+	private String name = "/uk/ac/ox/ctl/lti13/step-3-redirect.html";
 
 	/**
 	 * @param useState if true then use the state parameter for tracking logins.
 	 */
 	public StateCheckingAuthenticationSuccessHandler(boolean useState) {
 		this.useState = useState;
+		try {
+			htmlTemplate = StringReader.readString(getClass().getResourceAsStream(name));
+		} catch (IOException e) {
+			throw new IllegalStateException("Failed to read " + name, e);
+		}
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	/**
@@ -86,27 +101,9 @@ public class StateCheckingAuthenticationSuccessHandler extends
 		String state = oidcAuthenticationToken.getState();
 
 
-		JsonStringEncoder encoder = JsonStringEncoder.getInstance();
-		response.setContentType("text/html");
+		response.setContentType("text/html;charset=UTF-8");
 		PrintWriter writer = response.getWriter();
-		writer.append("<html><head><title>redirect</title><script>");
-		writer.append("var state = \"" + new String(encoder.quoteAsString(state)) + "\";\n");
-		writer.append("var url = \"" + new String(encoder.quoteAsString(targetUrl)) + "\";\n");
-		writer.append("try {\n" +
-				"    if (state !== window.sessionStorage.getItem('state')) {\n" +
-				"     console.log('State does not match');\n" +
-				"    } else {\n" +
-				"         document.location = url;\n" +
-				"    } \n" +
-				"} catch (error) {\n" +
-				"    if (error.name === 'SecurityError' ) {\n" +
-				"        console.log(\"You have cookies disabled for this site.\")\n" +
-				"    } else {\n" +
-				"        throw error;\n" +
-				"    }\n" +
-				"}");
-		writer.append("</script></head><body>");
-
+		writer.append(htmlTemplate.replaceFirst("@@state@@", state).replaceFirst("@@url@@", targetUrl));
 	}
 
 	/**
