@@ -10,7 +10,7 @@ import org.springframework.web.client.RestTemplate;
 import uk.ac.ox.ctl.lti13.OAuth2Interceptor;
 import uk.ac.ox.ctl.lti13.TokenRetriever;
 import uk.ac.ox.ctl.lti13.lti.Claims;
-import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.authentication.OIDCLaunchFlowToken;
+import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.authentication.OidcLaunchFlowToken;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -26,7 +26,7 @@ public class NamesRoleService {
         this.tokenRetriever = tokenRetriever;
     }
 
-    public NRPSResponse getMembers(OIDCLaunchFlowToken oAuth2AuthenticationToken, boolean includeResourceLink) {
+    public NRPSResponse getMembers(OidcLaunchFlowToken oAuth2AuthenticationToken, boolean includeResourceLink) {
         OidcUser principal = oAuth2AuthenticationToken.getPrincipal();
         if (principal != null) {
             Object o = principal.getClaims().get(LtiScopes.LTI_NRPS_CLAIM);
@@ -63,6 +63,8 @@ public class NamesRoleService {
             }
             RestTemplate client = new RestTemplate();
             client.setInterceptors(Collections.singletonList(new OAuth2Interceptor(token.getAccessToken())));
+            // TODO Needs to set accept header to: application/vnd.ims.lti-nrps.v2.membershipcontainer+json
+            // TODO Needs to handle Link headers
             NRPSResponse response = client.getForObject(url, NRPSResponse.class);
             return response;
         } catch (JOSEException e) {

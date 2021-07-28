@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Redirect step 1</title>
+</head>
+<body>
+<noscript><h1>You need to have JavaScript enable to use this.</h1></noscript>
+</body>
+<script>
+    function showError(message) {
+        const h1 = document.createElement("h1")
+        h1.textContent = "Error: "+ message
+        document.body.append(h1)
+    }
+
+    const state = "@@state@@";
+    const url = "@@url@@";
+    try {
+        window.sessionStorage.setItem('state', state);
+        document.location = url;
+    } catch (error) {
+        if (error.name === 'SecurityError') {
+            showError("You have cookies disabled, please enable them for this site.");
+        } else {
+            showError(error.message)
+            throw error;
+        }
+    }
+</script>
+</html>

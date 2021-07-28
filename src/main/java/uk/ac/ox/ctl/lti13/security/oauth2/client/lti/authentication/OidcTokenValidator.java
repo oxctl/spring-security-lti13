@@ -44,23 +44,23 @@ final class OidcTokenValidator {
 		// Validate REQUIRED Claims
 		URL issuer = idToken.getIssuer();
 		if (issuer == null) {
-			throwInvalidIdTokenException();
+			throwInvalidIdTokenException("No issuer in token.");
 		}
 		String subject = idToken.getSubject();
 		if (subject == null) {
-			throwInvalidIdTokenException();
+			throwInvalidIdTokenException("No subject in token.");
 		}
 		List<String> audience = idToken.getAudience();
 		if (CollectionUtils.isEmpty(audience)) {
-			throwInvalidIdTokenException();
+			throwInvalidIdTokenException("No audience in token.");
 		}
 		Instant expiresAt = idToken.getExpiresAt();
 		if (expiresAt == null) {
-			throwInvalidIdTokenException();
+			throwInvalidIdTokenException("No expiry timestamp in token.");
 		}
 		Instant issuedAt = idToken.getIssuedAt();
 		if (issuedAt == null) {
-			throwInvalidIdTokenException();
+			throwInvalidIdTokenException("No issue timestamp in token.");
 		}
 
 		// 2. The Issuer Identifier for the OpenID Provider (which is typically obtained during Discovery)
@@ -73,20 +73,20 @@ final class OidcTokenValidator {
 		// The ID Token MUST be rejected if the ID Token does not list the Client as a valid audience,
 		// or if it contains additional audiences not trusted by the Client.
 		if (!audience.contains(clientRegistration.getClientId())) {
-			throwInvalidIdTokenException();
+			throwInvalidIdTokenException("Client ID not found for audience in token.");
 		}
 
 		// 4. If the ID Token contains multiple audiences,
 		// the Client SHOULD verify that an azp Claim is present.
 		String authorizedParty = idToken.getAuthorizedParty();
 		if (audience.size() > 1 && authorizedParty == null) {
-			throwInvalidIdTokenException();
+			throwInvalidIdTokenException("Multiple audiences and no authorized party in token.");
 		}
 
 		// 5. If an azp (authorized party) Claim is present,
 		// the Client SHOULD verify that its client_id is the Claim Value.
 		if (authorizedParty != null && !authorizedParty.equals(clientRegistration.getClientId())) {
-			throwInvalidIdTokenException();
+			throwInvalidIdTokenException("Authorized party doesn't match client ID in token.");
 		}
 
 		// 7. The alg value SHOULD be the default of RS256 or the algorithm sent by the Client
@@ -96,7 +96,7 @@ final class OidcTokenValidator {
 		// 9. The current time MUST be before the time represented by the exp Claim.
 		Instant now = Instant.now();
 		if (!now.isBefore(expiresAt)) {
-			throwInvalidIdTokenException();
+			throwInvalidIdTokenException("Token expiry timestamp is in the future.");
 		}
 
 		// 10. The iat Claim can be used to reject tokens that were issued too far away from the current time,
@@ -119,31 +119,34 @@ final class OidcTokenValidator {
 
 		String ltiVersion = idToken.getClaimAsString("https://purl.imsglobal.org/spec/lti/claim/version");
 		if (!"1.3.0".equals(ltiVersion)) {
-			throwInvalidIdTokenException();
+			throwInvalidIdTokenException("Must be LTI 1.3.0 version claim in token.");
 		}
 
 		String messageType = idToken.getClaimAsString("https://purl.imsglobal.org/spec/lti/claim/message_type");
 		if (messageType == null || messageType.isEmpty()) {
-			throwInvalidIdTokenException();
+			throwInvalidIdTokenException("Message type claim missing from token.");
 		}
 
 		List<String> roles = idToken.getClaimAsStringList("https://purl.imsglobal.org/spec/lti/claim/roles");
 		if (roles == null) {
-			throwInvalidIdTokenException();
+			throwInvalidIdTokenException("Roles claim missing from token.");
 		}
 		// TODO If there are roles should check one matches the known roles.
 
 		String deploymentId = idToken.getClaimAsString("https://purl.imsglobal.org/spec/lti/claim/deployment_id");
 		if (deploymentId == null || deploymentId.isEmpty()) {
-			throwInvalidIdTokenException();
+			throwInvalidIdTokenException("Deployment ID claim missing from token.");
 		}
-
 
 	}
 
 	private static void throwInvalidIdTokenException() {
+		throwInvalidIdTokenException(null);
+	}
+	
+	private static void throwInvalidIdTokenException(String message) {
 		OAuth2Error invalidIdTokenError = new OAuth2Error(INVALID_ID_TOKEN_ERROR_CODE);
-		throw new OAuth2AuthenticationException(invalidIdTokenError, invalidIdTokenError.toString());
+		throw new OAuth2AuthenticationException(invalidIdTokenError, (message != null)?message:invalidIdTokenError.toString());
 	}
 
 	private OidcTokenValidator() {}
