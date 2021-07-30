@@ -1,4 +1,4 @@
-package uk.ac.ox.ctl.lti13;
+package uk.ac.ox.ctl.lti13.stateful;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -32,6 +32,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.context.WebApplicationContext;
+import uk.ac.ox.ctl.lti13.Lti13Configurer;
 import uk.ac.ox.ctl.lti13.config.Lti13Configuration;
 import uk.ac.ox.ctl.lti13.lti.Claims;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.authentication.OidcLaunchFlowAuthenticationProvider;
@@ -47,10 +48,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.ac.ox.ctl.lti13.Lti13Step3Test.CustomLti13Configuration;
+import static uk.ac.ox.ctl.lti13.stateful.Lti13Step3Test.CustomLti13Configuration;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration

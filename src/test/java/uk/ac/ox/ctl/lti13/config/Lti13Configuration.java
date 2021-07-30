@@ -1,6 +1,7 @@
 package uk.ac.ox.ctl.lti13.config;
 
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,11 +21,15 @@ import java.security.NoSuchAlgorithmException;
 @Configuration
 @EnableWebSecurity
 public class Lti13Configuration extends WebSecurityConfigurerAdapter {
+    
+	@Value("${use.state:false}")
+	private boolean useState;
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests().anyRequest().authenticated();
         Lti13Configurer lti13Configurer = new Lti13Configurer();
+        lti13Configurer.useState(useState);
         http.apply(lti13Configurer);
     }
 

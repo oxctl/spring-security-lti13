@@ -1,4 +1,4 @@
-package uk.ac.ox.ctl.lti13;
+package uk.ac.ox.ctl.lti13.stateless;
 
 
 import org.junit.Before;
@@ -6,21 +6,25 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ox.ctl.lti13.config.Lti13Configuration;
 
+import static org.hamcrest.core.StringContains.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
+@TestPropertySource(properties = "use.state=true")
 @SpringJUnitWebConfig(classes = {Lti13Configuration.class})
 public class Lti13Step1Test {
 
@@ -60,8 +64,10 @@ public class Lti13Step1Test {
                 .param("iss", "https://test.com")
                 .param("login_hint", "hint")
                 .param("target_link_uri", "https://localhost/"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("https://platform.test/auth/**"));
+                .andExpect(status().isOk())
+                // Just check that we're putting the right content in the page.
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(content().string(containsString("https://platform.test/auth/")));
     }
 
 }
