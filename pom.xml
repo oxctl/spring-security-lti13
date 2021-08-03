@@ -9,7 +9,8 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring.version>5.2.9.RELEASE</spring.version>
+        <spring.version>5.3.9</spring.version>
+        <spring.security.version>5.5.2</spring.security.version>
     </properties>
 
     <name>Spring Security LTI 1.3</name>
@@ -66,7 +67,7 @@
                 <!-- We need to lock down all the spring JARs so that the oauth1 support doesn't pull them back -->
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-bom</artifactId>
-                <version>${spring.version}</version>
+                <version>${spring.security.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

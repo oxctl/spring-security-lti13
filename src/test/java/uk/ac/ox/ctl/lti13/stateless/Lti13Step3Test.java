@@ -144,7 +144,7 @@ public class Lti13Step3Test {
                 .thenReturn(oAuth2AuthorizationRequest);
 
         when(restOperations.exchange(any(), eq(String.class)))
-                .thenReturn(new ResponseEntity<>(jwkSet().toJSONObject().toJSONString(), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(jwkSet().toString(), HttpStatus.OK));
         mockMvc.perform(get("/lti/login").param("id_token", createJWT(claims)).param("state", "state-123-abc"))
                 // Check that we have correct URL and state in the HTML
                 .andExpect(content().string(containsString("state-123-abc")))
@@ -162,7 +162,7 @@ public class Lti13Step3Test {
                 .thenReturn(oAuth2AuthorizationRequest);
 
         when(restOperations.exchange(any(), eq(String.class)))
-                .thenReturn(new ResponseEntity<>(jwkSet().toJSONObject().toJSONString(), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(jwkSet().toString(), HttpStatus.OK));
         mockMvc.perform(get("/lti/login").param("id_token", createJWT(claims)).param("state", "state"))
                 .andExpect(status().is4xxClientError());
     }
