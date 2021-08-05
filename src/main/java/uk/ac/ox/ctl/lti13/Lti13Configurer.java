@@ -72,13 +72,23 @@ public class Lti13Configurer extends AbstractHttpConfigurer<Lti13Configurer, Htt
     }
 
     /**
+     * This allows the login to not use cookies but instead use the state parameter and local storage to handle the
+     * login. However if the application isn't using cookies then it will need to store a session identifier on the
+     * client, this is most useful when building Single Page Applications (SPA).
+     * 
      * @param useState if true then we don't use cookies, but use the state to track logins between requests.
      */
     public Lti13Configurer useState(boolean useState) {
         this.useState = useState;
         return this;
     }
-    
+
+    /**
+     * Using this may cause problems for users who are behind a proxy or NAT setup that uses different IP addresses
+     * for different requests, even if they are close together in time.
+     * 
+     * @param limitIpAddresses if true then ensure that all the OAuth requests for a LTI launch come from the same IP
+     */
     public Lti13Configurer limitIpAddresses(boolean limitIpAddresses) {
         this.limitIpAddresses = limitIpAddresses;
         return this;
