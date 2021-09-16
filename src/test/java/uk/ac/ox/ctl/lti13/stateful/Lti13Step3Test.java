@@ -139,7 +139,7 @@ public class Lti13Step3Test {
                 .thenReturn(oAuth2AuthorizationRequest);
 
         when(restOperations.exchange(any(), eq(String.class)))
-                .thenReturn(new ResponseEntity<>(jwkSet().toJSONObject().toJSONString(), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(jwkSet().toString(), HttpStatus.OK));
         mockMvc.perform(get("/lti/login").param("id_token", createJWT(claims)).param("state", "state"))
                 .andExpect(status().is3xxRedirection());
     }
@@ -155,7 +155,7 @@ public class Lti13Step3Test {
                 .thenReturn(oAuth2AuthorizationRequest);
 
         when(restOperations.exchange(any(), eq(String.class)))
-                .thenReturn(new ResponseEntity<>(jwkSet().toJSONObject().toJSONString(), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(jwkSet().toString(), HttpStatus.OK));
         mockMvc.perform(get("/lti/login").param("id_token", createJWT(claims)).param("state", "state"))
                 .andExpect(status().is4xxClientError());
     }
