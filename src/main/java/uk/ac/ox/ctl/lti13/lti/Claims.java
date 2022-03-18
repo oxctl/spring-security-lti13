@@ -9,6 +9,7 @@ public class Claims {
     public static final String RESOURCE_LINK = "https://purl.imsglobal.org/spec/lti/claim/resource_link";
 
     public static final String ROLES = "https://purl.imsglobal.org/spec/lti/claim/roles";
+    public static final String LIS = "https://purl.imsglobal.org/spec/lti/claim/lis";
 
     public static final String CONTEXT = "https://purl.imsglobal.org/spec/lti/claim/context";
     public static final String PLATFORM_INSTANCE = "https://purl.imsglobal.org/spec/lti/claim/tool_platform";
