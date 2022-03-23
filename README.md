@@ -30,5 +30,5 @@ then if that completes successfully a release bundle can be pushed to the stagin
 
     mvn -Prelease release:perform
     
-We don't automatically close the staged artifacts so after checking that the files are ok you should login to the [repository](https://oss.sonatype.org/) and release it.
+We don't automatically close the staged artifacts so after checking that the files are ok you should login to the [repository](https://oss.sonatype.org/) and release it. The version in the README.md should also be updated so that people using the project get the latest version.
 
