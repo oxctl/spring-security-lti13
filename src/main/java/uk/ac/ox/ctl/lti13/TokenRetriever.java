@@ -80,6 +80,7 @@ public class TokenRetriever {
                     "Failed to get keypair for client registration: "+ clientRegistration.getRegistrationId()
             );
         }
+        String keyId = keyPairService.getKeyId(clientRegistration.getRegistrationId());
 
         RSASSASigner signer = new RSASSASigner(keyPair.getPrivate());
 
@@ -94,8 +95,14 @@ public class TokenRetriever {
                 .expirationTime(Date.from(Instant.now().plusSeconds(jwtLifetime)))
                 .build();
 
-        // We don't have to include a key ID.
-        JWSHeader jwt = new JWSHeader.Builder(JWSAlgorithm.RS256).type(JOSEObjectType.JWT).build();
+        // We don't have to include a key ID, however if we don't then when you use a JWK file the consuming application
+        // won't know which key to use to verify the signature
+        final JWSHeader.Builder builder = new JWSHeader.Builder(JWSAlgorithm.RS256);
+        builder.type(JOSEObjectType.JWT);
+        if (keyId != null) {
+            builder.keyID(keyId);
+        }
+        JWSHeader jwt = builder.build();
         SignedJWT signedJWT = new SignedJWT(jwt, claimsSet);
         signedJWT.sign(signer);
 

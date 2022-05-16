@@ -8,13 +8,21 @@ import java.security.KeyPair;
 public class SingleKeyPairService implements KeyPairService {
 
     private final KeyPair keyPair;
+    
+    private final String keyId;
 
-    public SingleKeyPairService(KeyPair keyPair) {
+    public SingleKeyPairService(KeyPair keyPair, String keyId) {
         this.keyPair = keyPair;
+        this.keyId = keyId;
     }
 
     @Override
     public KeyPair getKeyPair(String clientRegistrationId) {
         return keyPair;
+    }
+
+    @Override
+    public String getKeyId(String clientRegistration) {
+        return keyId;
     }
 }
