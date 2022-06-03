@@ -15,7 +15,7 @@ This [library](https://search.maven.org/artifact/uk.ac.ox.ctl/spring-security-lt
     <dependency>
         <groupId>uk.ac.ox.ctl</groupId>
         <artifactId>spring-security-lti13</artifactId>
-        <version>0.0.3</version>
+        <version>0.0.4</version>
     </dependency>
 
 There is a [demo project](https://github.com/oxctl/spring-security-lti13-demo) built using this library that may be helpful in getting started with the project.
