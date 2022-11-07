@@ -47,7 +47,7 @@ public class Lti13Configuration extends WebSecurityConfigurerAdapter {
                 .clientId("test-id")
                 .authorizationGrantType(AuthorizationGrantType.IMPLICIT)
                 .scope("openid")
-                .redirectUriTemplate("{baseUrl}/lti/login")
+                .redirectUri("{baseUrl}/lti/login")
                 .authorizationUri(platformUri+ "/auth/new")
                 .tokenUri(platformUri+ "/access_tokens")
                 .jwkSetUri(platformUri+ "/keys.json")

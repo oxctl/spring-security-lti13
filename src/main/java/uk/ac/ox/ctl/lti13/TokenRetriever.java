@@ -64,7 +64,7 @@ public class TokenRetriever {
         MultiValueMap<String, String> formData = buildFormData(signedJWT, scopes);
         // We are using RestTemplate here as that's what the existing OAuth2 code in Spring uses at the moment.
         HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         RequestEntity<MultiValueMap<String, String>> requestEntity = new RequestEntity<>(
                 formData, headers, HttpMethod.POST, URI.create(clientRegistration.getProviderDetails().getTokenUri())
         );
