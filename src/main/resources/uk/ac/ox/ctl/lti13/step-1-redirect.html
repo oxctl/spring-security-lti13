@@ -5,6 +5,7 @@
 </head>
 <body>
 <noscript><h1>You need to have JavaScript enable to use this.</h1></noscript>
+<h1>Loading...</h1>
 </body>
 <script>
     function showError(message) {
@@ -15,9 +16,100 @@
 
     const state = "@@state@@";
     const url = "@@url@@";
+    const nonce = "@@nonce@@";
     try {
-        window.sessionStorage.setItem('state', state);
-        document.location = url;
+        /**
+         * Attempt to generate a uuid, falls back to a random string on 
+         * @returns {string}
+         */
+        function uuid() {
+            if (self.crypto && self.crypto.randomUUID) {
+                return self.crypto.randomUUID();
+            } else {
+                // IE 11 Doesn't have randomUUID so fall back to short random string.
+                return (Math.random() + 1).toString(36).substring(2, 5)
+            }
+        }
+        const platformOrigin = "*"; // Canvas doesn't support origin.
+        let targetFrame = window.parent || window.opener
+
+        // If we don't get any response from the platform show something to the user.
+        setTimeout(function() {
+            showError("Timeout handling LTI authentication (storage), please retry");
+        }, 5000)
+        
+        // Have we set the values in the storage?
+        let setState = false
+        let setNonce = false
+
+        let stateUuid = uuid();
+        postAndHandle(targetFrame, {
+            "subject": "org.imsglobal.lti.put_data",
+            "message_id": stateUuid,
+            "key": "state_"+ state,
+            "value": state
+        } , platformOrigin, function(event) {
+            setState = true
+            redirectIfValid()
+        })
+
+        let nonceUuid = uuid();
+        postAndHandle(targetFrame, {
+            "subject": "org.imsglobal.lti.put_data",
+            "message_id": nonceUuid,
+            "key": "nonce_"+ nonce,
+            "value": nonce
+        } , platformOrigin, function(event) {
+            setNonce = true
+            redirectIfValid()
+        })
+
+        /**
+         * Send a message and handle its response.
+         * @param target 
+         * @param message
+         * @param origin
+         * @param onResponse
+         */
+        function postAndHandle(target, message, origin, onResponse) {
+            function handler(event) {
+                // This isn't a message we're expecting
+                if (typeof event.data !== "object"){
+                    return;
+                }
+                // Validate it's the response type you expect
+                if (event.data.subject !== message.subject+ ".response") {
+                    return;
+                }
+                // Validate the message id matches the id you sent
+                if (event.data.message_id !== message.message_id) {
+                    return;
+                }
+                // Validate that the event's origin is the same as the derived platform origin
+                if (origin !== '*' && event.origin !== origin) {
+                    return;
+                }
+                // handle errors
+                if (event.data.error){
+                    // handle errors (message and code)
+                    console.log(event.data.error)
+                    return;
+                }
+                onResponse(event)
+                // Cleanup now we've got our message.
+                window.removeEventListener('message', handler)
+            }
+            window.addEventListener('message', handler); 
+            // Now the handler is setup we can send our message.
+            target.postMessage(message, origin);
+        }
+        
+        function redirectIfValid() {
+            // Only redirect once we've had confirmation both are set
+            if (setNonce && setState) {
+                document.location = url;
+            }
+        }
     } catch (error) {
         if (error.name === 'SecurityError') {
             showError("You have cookies disabled, please enable them for this site.");

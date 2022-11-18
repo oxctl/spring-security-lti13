@@ -114,6 +114,7 @@ public class OIDCInitiatingLoginRequestResolver implements OAuth2AuthorizationRe
         additionalParameters.put(OAuth2ParameterNames.RESPONSE_TYPE, "id_token");
         additionalParameters.put("login_hint", loginHint);
         additionalParameters.put("response_mode", "form_post");
+        // TODO We should really have a custom object for LTI launches
         additionalParameters.put("nonce", UUID.randomUUID().toString());
         additionalParameters.put("prompt", "none");
 

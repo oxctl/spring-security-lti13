@@ -14,14 +14,6 @@ public class StringReader {
 	 * Read a InputStream into a String. Can use readAll() when we are on Java 9 or newer.
 	 */
 	public static String readString(InputStream inputStream) throws IOException {
-		StringBuilder textBuilder = new StringBuilder();
-		try (Reader reader = new BufferedReader(new InputStreamReader
-				(inputStream, Charset.forName(StandardCharsets.UTF_8.name())))) {
-			char[] buffer = new char[1024];
-			while (reader.read(buffer) != -1) {
-				textBuilder.append(buffer);
-			}
-		}
-		return textBuilder.toString();
+		return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 	}
 }

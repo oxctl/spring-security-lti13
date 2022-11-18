@@ -18,6 +18,8 @@ package uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web;
 
 import com.fasterxml.jackson.core.io.JsonStringEncoder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.WebAttributes;
 import org.springframework.security.web.authentication.AbstractAuthenticationTargetUrlRequestHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -43,7 +45,6 @@ public class StateCheckingAuthenticationSuccessHandler extends
 		AuthenticationSuccessHandler {
 
 	private final boolean useState;
-	private final JsonStringEncoder encoder = JsonStringEncoder.getInstance();
 	private final String htmlTemplate;
 	
 	private String name = "/uk/ac/ox/ctl/lti13/step-3-redirect.html";
@@ -99,11 +100,15 @@ public class StateCheckingAuthenticationSuccessHandler extends
 		}
 		OidcAuthenticationToken oidcAuthenticationToken = (OidcAuthenticationToken) authentication;
 		String state = oidcAuthenticationToken.getState();
-
+		String nonce = ((OidcUser)(oidcAuthenticationToken).getPrincipal()).getIdToken().getNonce();
 
 		response.setContentType("text/html;charset=UTF-8");
 		PrintWriter writer = response.getWriter();
-		writer.append(htmlTemplate.replaceFirst("@@state@@", state).replaceFirst("@@url@@", targetUrl));
+		writer.append(htmlTemplate
+				.replaceFirst("@@state@@", state)
+				.replaceFirst("@@url@@", targetUrl)
+				.replaceFirst("@@nonce@@", nonce)
+		);
 	}
 
 	/**
