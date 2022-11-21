@@ -188,7 +188,7 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
 			this.authorizationRequestRepository.saveAuthorizationRequest(authorizationRequest, request, response);
 		}
 		
-		if (authorizationRequestRepository.hasPersistentSession(request)) {
+		if (authorizationRequestRepository.hasWorkingSession(request)) {
 			// Standard session based usage so we just do a normal browser redirect.
 			this.authorizationRedirectStrategy.sendRedirect(request, response, authorizationRequest.getAuthorizationRequestUri());
 		} else {

@@ -80,7 +80,7 @@ public class StateCheckingAuthenticationSuccessHandler extends
 						  Authentication authentication) throws IOException, ServletException {
 		
 		// If we got this from the Session then just redirect
-		if (authorizationRequestRepository.hasPersistentSession(request)) {
+		if (authorizationRequestRepository.hasWorkingSession(request)) {
 			super.handle(request, response, authentication);
 			return;
 		}
