@@ -39,6 +39,7 @@ import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.authentication.OidcLaunchFl
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OAuth2LoginAuthenticationFilter;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OptimisticAuthorizationRequestRepository;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.security.KeyPair;
@@ -70,7 +71,7 @@ public class Lti13Step3Test {
     private KeyPair keyPair;
 
     @Autowired
-    private AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository;
+    private OptimisticAuthorizationRequestRepository authorizationRequestRepository;
 
 
     @Configuration
@@ -78,14 +79,14 @@ public class Lti13Step3Test {
     public static class CustomLti13Configuration extends Lti13Configuration {
 
         @Autowired
-        private AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository;
+        private OptimisticAuthorizationRequestRepository authorizationRequestRepository;
 
         @Autowired
         private RestOperations restOperations;
 
         @Bean
-        AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
-            return mock(AuthorizationRequestRepository.class);
+        OptimisticAuthorizationRequestRepository authorizationRequestRepository() {
+            return mock(OptimisticAuthorizationRequestRepository.class);
         }
 
         @Override
@@ -136,12 +137,14 @@ public class Lti13Step3Test {
 
         OAuth2AuthorizationRequest oAuth2AuthorizationRequest = createAuthRequest().build();
 
+        when(authorizationRequestRepository.loadAuthorizationRequest(any(HttpServletRequest.class)))
+                .thenReturn(oAuth2AuthorizationRequest);
         when(authorizationRequestRepository.removeAuthorizationRequest(any(HttpServletRequest.class), any(HttpServletResponse.class)))
                 .thenReturn(oAuth2AuthorizationRequest);
 
         when(restOperations.exchange(any(), eq(String.class)))
                 .thenReturn(new ResponseEntity<>(jwkSet().toString(), HttpStatus.OK));
-        mockMvc.perform(get("/lti/login").param("id_token", createJWT(claims)).param("state", "state"))
+        mockMvc.perform(get("/lti/login").param("id_token", createJWT(claims)).param("state", "state").cookie(new Cookie("WORKING_COOKIES", "true")))
                 .andExpect(status().is3xxRedirection());
     }
 
@@ -194,6 +197,7 @@ public class Lti13Step3Test {
                     .subject("subject")
                     .claim("scope", "openid")
                     .audience("test-id")
+                    .issueTime(new Date())
                     .expirationTime(Date.from(Instant.now().plusSeconds(300)))
                     .claim("nonce", "test-nonce")
                     .claim(Claims.LTI_VERSION, "1.3.0")

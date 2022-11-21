@@ -74,7 +74,7 @@ public class Lti13Step3Test {
     private KeyPair keyPair;
 
     @Autowired
-    private AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository;
+    private OptimisticAuthorizationRequestRepository authorizationRequestRepository;
 
 
     @Configuration
@@ -82,14 +82,14 @@ public class Lti13Step3Test {
     public static class CustomLti13Configuration extends Lti13Configuration {
 
         @Autowired
-        private AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository;
+        private OptimisticAuthorizationRequestRepository authorizationRequestRepository;
 
         @Autowired
         private RestOperations restOperations;
 
         @Bean
-        AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
-            return mock(AuthorizationRequestRepository.class);
+        OptimisticAuthorizationRequestRepository authorizationRequestRepository() {
+            return mock(OptimisticAuthorizationRequestRepository.class);
         }
 
         @Override
@@ -201,6 +201,7 @@ public class Lti13Step3Test {
                     .subject("subject")
                     .claim("scope", "openid")
                     .audience("test-id")
+                    .issueTime(new Date())
                     .expirationTime(Date.from(Instant.now().plusSeconds(300)))
                     .claim("nonce", "test-nonce")
                     .claim(Claims.LTI_VERSION, "1.3.0")

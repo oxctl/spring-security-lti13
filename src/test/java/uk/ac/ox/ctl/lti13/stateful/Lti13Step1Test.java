@@ -14,6 +14,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ox.ctl.lti13.config.Lti13Configuration;
 
+import javax.servlet.http.Cookie;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
@@ -57,9 +59,11 @@ public class Lti13Step1Test {
     @Test
     public void testStep1Complete() throws Exception {
         this.mockMvc.perform(post("/lti/login_initiation/test")
-                .param("iss", "https://test.com")
-                .param("login_hint", "hint")
-                .param("target_link_uri", "https://localhost/"))
+                    .param("iss", "https://test.com")
+                    .param("login_hint", "hint")
+                    .param("target_link_uri", "https://localhost/")
+                    .cookie(new Cookie("WORKING_COOKIES", "true"))
+                )
                 .andExpect(status().is3xxRedirection())
                 // We can't test the cookie as this is done by Spring Security and not the controller
                 .andExpect(redirectedUrlPattern("https://platform.test/auth/**"));
