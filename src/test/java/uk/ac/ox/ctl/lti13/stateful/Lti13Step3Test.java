@@ -193,7 +193,7 @@ public class Lti13Step3Test {
                     .subject("subject")
                     .claim("scope", "openid")
                     .audience("test-id")
-                    .expirationTime(Date.from(Instant.now().plusSeconds(10)))
+                    .expirationTime(Date.from(Instant.now().plusSeconds(300)))
                     .claim("nonce", "test-nonce")
                     .claim(Claims.LTI_VERSION, "1.3.0")
                     .claim(Claims.MESSAGE_TYPE, "unchecked")
