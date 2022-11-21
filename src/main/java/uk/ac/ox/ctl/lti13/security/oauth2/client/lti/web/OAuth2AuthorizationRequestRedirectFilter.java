@@ -87,7 +87,6 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
 				new StateAuthorizationRequestRepository(Duration.ofMinutes(1))
 		);
 	private AuthorizationRedirectHandler stateAuthorizationRedirectHandler = new StateAuthorizationRedirectHandler();
-	private boolean useState = false;
 
 	/**
 	 * Constructs an {@code OAuth2AuthorizationRequestRedirectFilter} using the provided parameters.
@@ -122,13 +121,6 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
 	public final void setAuthorizationRequestRepository(OptimisticAuthorizationRequestRepository authorizationRequestRepository) {
 		Assert.notNull(authorizationRequestRepository, "authorizationRequestRepository cannot be null");
 		this.authorizationRequestRepository = authorizationRequestRepository;
-	}
-
-	/**
-	 * @param useState if true then we should use the state parameter to track logins.
-	 */
-	public void setUseState(boolean useState) {
-		this.useState = useState;
 	}
 
 	@Override
