@@ -22,14 +22,10 @@ import java.security.NoSuchAlgorithmException;
 @EnableWebSecurity
 public class Lti13Configuration extends WebSecurityConfigurerAdapter {
     
-	@Value("${use.state:false}")
-	private boolean useState;
-
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests().anyRequest().authenticated();
         Lti13Configurer lti13Configurer = new Lti13Configurer();
-        lti13Configurer.useState(useState);
         http.apply(lti13Configurer);
     }
 

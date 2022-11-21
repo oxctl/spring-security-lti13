@@ -117,7 +117,6 @@ public class Lti13Step3Test {
                     return oAuth2LoginAuthenticationFilter;
                 }
             };
-            lti13Configurer.useState(true);
             http.apply(lti13Configurer);
         }
     }
