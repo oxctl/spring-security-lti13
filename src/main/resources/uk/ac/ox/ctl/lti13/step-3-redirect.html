@@ -17,6 +17,11 @@
     const state = "@@state@@";
     const url = "@@url@@"
     const nonce = "@@nonce@@";
+
+    // Have we set the values in the storage?
+    let savedState = null;
+    let savedNonce = null;
+    
     try {
         /**
          * Attempt to generate a uuid, falls back to a random string on
@@ -38,9 +43,7 @@
             showError("Timeout handling LTI authentication (retrieval), please retry");
         }, 5000)
 
-        // Have we set the values in the storage?
-        let savedState;
-        let savedNonce;
+
 
         let stateUuid = uuid();
         postAndHandle(targetFrame, {
