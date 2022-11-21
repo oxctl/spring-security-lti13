@@ -39,6 +39,7 @@ import uk.ac.ox.ctl.lti13.config.Lti13Configuration;
 import uk.ac.ox.ctl.lti13.lti.Claims;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.authentication.OidcLaunchFlowAuthenticationProvider;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OAuth2LoginAuthenticationFilter;
+import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OptimisticAuthorizationRequestRepository;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -105,7 +106,7 @@ public class Lti13Step3Test {
                 }
 
                 @Override
-                protected OAuth2LoginAuthenticationFilter configureLoginFilter(ClientRegistrationRepository clientRegistrationRepository, OidcLaunchFlowAuthenticationProvider oidcLaunchFlowAuthenticationProvider, AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository) {
+                protected OAuth2LoginAuthenticationFilter configureLoginFilter(ClientRegistrationRepository clientRegistrationRepository, OidcLaunchFlowAuthenticationProvider oidcLaunchFlowAuthenticationProvider, OptimisticAuthorizationRequestRepository authorizationRequestRepository) {
                     // This is so that we can put a fake original request into the repository so that the state between
                     // the fake request and out test request will match.
                     OAuth2LoginAuthenticationFilter oAuth2LoginAuthenticationFilter = super.configureLoginFilter(clientRegistrationRepository, oidcLaunchFlowAuthenticationProvider, authorizationRequestRepository);

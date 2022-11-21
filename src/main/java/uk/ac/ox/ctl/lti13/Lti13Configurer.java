@@ -20,6 +20,7 @@ import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.authentication.TargetLinkUr
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OAuth2AuthorizationRequestRedirectFilter;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OAuth2LoginAuthenticationFilter;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OIDCInitiatingLoginRequestResolver;
+import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OptimisticAuthorizationRequestRepository;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.StateAuthorizationRequestRepository;
 
 import java.time.Duration;
@@ -114,7 +115,7 @@ public class Lti13Configurer extends AbstractHttpConfigurer<Lti13Configurer, Htt
         ClientRegistrationRepository clientRegistrationRepository = Lti13ConfigurerUtils.getClientRegistrationRepository(http);
 
         OidcLaunchFlowAuthenticationProvider oidcLaunchFlowAuthenticationProvider = configureAuthenticationProvider(http);
-        AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository = configureRequestRepository();
+        OptimisticAuthorizationRequestRepository authorizationRequestRepository = configureRequestRepository();
         // This handles step 1 of the IMS SEC
         // https://www.imsglobal.org/spec/security/v1p0/#step-1-third-party-initiated-login
         http.addFilterAfter(configureInitiationFilter(clientRegistrationRepository, authorizationRequestRepository), LogoutFilter.class);
@@ -123,13 +124,11 @@ public class Lti13Configurer extends AbstractHttpConfigurer<Lti13Configurer, Htt
         http.addFilterAfter(configureLoginFilter(clientRegistrationRepository, oidcLaunchFlowAuthenticationProvider, authorizationRequestRepository), AbstractPreAuthenticatedProcessingFilter.class);
     }
 
-    protected AuthorizationRequestRepository<OAuth2AuthorizationRequest> configureRequestRepository() {
-        if (useState) {
-            StateAuthorizationRequestRepository stateRepository = new StateAuthorizationRequestRepository(Duration.ofMinutes(1));
-            stateRepository.setLimitIpAddress(limitIpAddresses);
-            return stateRepository;
-        }
-        return new HttpSessionOAuth2AuthorizationRequestRepository();
+    protected OptimisticAuthorizationRequestRepository configureRequestRepository() {
+        HttpSessionOAuth2AuthorizationRequestRepository sessionRepository = new HttpSessionOAuth2AuthorizationRequestRepository();
+        StateAuthorizationRequestRepository stateRepository = new StateAuthorizationRequestRepository(Duration.ofMinutes(1));
+        stateRepository.setLimitIpAddress(limitIpAddresses);
+        return new OptimisticAuthorizationRequestRepository( sessionRepository, stateRepository );
     }
 
     protected OidcLaunchFlowAuthenticationProvider configureAuthenticationProvider(HttpSecurity http) {
@@ -142,7 +141,7 @@ public class Lti13Configurer extends AbstractHttpConfigurer<Lti13Configurer, Htt
         return oidcLaunchFlowAuthenticationProvider;
     }
 
-    protected OAuth2AuthorizationRequestRedirectFilter configureInitiationFilter(ClientRegistrationRepository clientRegistrationRepository, AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository) {
+    protected OAuth2AuthorizationRequestRedirectFilter configureInitiationFilter(ClientRegistrationRepository clientRegistrationRepository,  OptimisticAuthorizationRequestRepository authorizationRequestRepository) {
         OIDCInitiatingLoginRequestResolver resolver = new OIDCInitiatingLoginRequestResolver(clientRegistrationRepository, ltiPath+ loginInitiationPath);
         OAuth2AuthorizationRequestRedirectFilter filter = new OAuth2AuthorizationRequestRedirectFilter(resolver);
         filter.setAuthorizationRequestRepository(authorizationRequestRepository);
@@ -150,11 +149,11 @@ public class Lti13Configurer extends AbstractHttpConfigurer<Lti13Configurer, Htt
         return filter;
     }
 
-    protected OAuth2LoginAuthenticationFilter configureLoginFilter(ClientRegistrationRepository clientRegistrationRepository, OidcLaunchFlowAuthenticationProvider oidcLaunchFlowAuthenticationProvider, AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository) {
+    protected OAuth2LoginAuthenticationFilter configureLoginFilter(ClientRegistrationRepository clientRegistrationRepository, OidcLaunchFlowAuthenticationProvider oidcLaunchFlowAuthenticationProvider, OptimisticAuthorizationRequestRepository authorizationRequestRepository) {
         // This filter handles the actual authentication and behaviour of errors
         OAuth2LoginAuthenticationFilter loginFilter = new OAuth2LoginAuthenticationFilter(clientRegistrationRepository, ltiPath+ loginPath);
         // This is to find the URL that we should redirect the user to.
-        TargetLinkUriAuthenticationSuccessHandler successHandler = new TargetLinkUriAuthenticationSuccessHandler(this.useState);
+        TargetLinkUriAuthenticationSuccessHandler successHandler = new TargetLinkUriAuthenticationSuccessHandler(this.useState, authorizationRequestRepository);
         loginFilter.setAuthenticationSuccessHandler(successHandler);
         // This is just so that you can get better error messages when something goes wrong.
         OAuthAuthenticationFailureHandler failureHandler = new OAuthAuthenticationFailureHandler();
