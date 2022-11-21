@@ -15,10 +15,9 @@ import javax.servlet.http.HttpServletResponse;
 public class TargetLinkUriAuthenticationSuccessHandler extends StateCheckingAuthenticationSuccessHandler {
 
     /**
-     * @param useState                       if true then use the state parameter for tracking logins.
-     * @param authorizationRequestRepository
+     * @param authorizationRequestRepository The authentication repository.
      */
-    public TargetLinkUriAuthenticationSuccessHandler(boolean useState, OptimisticAuthorizationRequestRepository authorizationRequestRepository) {
+    public TargetLinkUriAuthenticationSuccessHandler(OptimisticAuthorizationRequestRepository authorizationRequestRepository) {
         super(authorizationRequestRepository);
     }
 

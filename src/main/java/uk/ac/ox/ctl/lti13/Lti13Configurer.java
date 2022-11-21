@@ -9,9 +9,7 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
-import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import uk.ac.ox.ctl.lti13.security.oauth2.OAuthAuthenticationFailureHandler;
@@ -44,7 +42,6 @@ public class Lti13Configurer extends AbstractHttpConfigurer<Lti13Configurer, Htt
     private String loginInitiationPath = "/login_initiation";
     private ApplicationEventPublisher applicationEventPublisher;
     private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
-    private boolean useState;
     private boolean limitIpAddresses;
 
     public Lti13Configurer ltiPath(String ltiPath) {
@@ -69,18 +66,6 @@ public class Lti13Configurer extends AbstractHttpConfigurer<Lti13Configurer, Htt
 
     public Lti13Configurer grantedAuthoritiesMapper(GrantedAuthoritiesMapper grantedAuthoritiesMapper) {
         this.grantedAuthoritiesMapper = grantedAuthoritiesMapper;
-        return this;
-    }
-
-    /**
-     * This allows the login to not use cookies but instead use the state parameter and local storage to handle the
-     * login. However if the application isn't using cookies then it will need to store a session identifier on the
-     * client, this is most useful when building Single Page Applications (SPA).
-     * 
-     * @param useState if true then we don't use cookies, but use the state to track logins between requests.
-     */
-    public Lti13Configurer useState(boolean useState) {
-        this.useState = useState;
         return this;
     }
 
@@ -145,7 +130,6 @@ public class Lti13Configurer extends AbstractHttpConfigurer<Lti13Configurer, Htt
         OIDCInitiatingLoginRequestResolver resolver = new OIDCInitiatingLoginRequestResolver(clientRegistrationRepository, ltiPath+ loginInitiationPath);
         OAuth2AuthorizationRequestRedirectFilter filter = new OAuth2AuthorizationRequestRedirectFilter(resolver);
         filter.setAuthorizationRequestRepository(authorizationRequestRepository);
-        filter.setUseState(this.useState);
         return filter;
     }
 
@@ -153,7 +137,7 @@ public class Lti13Configurer extends AbstractHttpConfigurer<Lti13Configurer, Htt
         // This filter handles the actual authentication and behaviour of errors
         OAuth2LoginAuthenticationFilter loginFilter = new OAuth2LoginAuthenticationFilter(clientRegistrationRepository, ltiPath+ loginPath);
         // This is to find the URL that we should redirect the user to.
-        TargetLinkUriAuthenticationSuccessHandler successHandler = new TargetLinkUriAuthenticationSuccessHandler(this.useState, authorizationRequestRepository);
+        TargetLinkUriAuthenticationSuccessHandler successHandler = new TargetLinkUriAuthenticationSuccessHandler(authorizationRequestRepository);
         loginFilter.setAuthenticationSuccessHandler(successHandler);
         // This is just so that you can get better error messages when something goes wrong.
         OAuthAuthenticationFailureHandler failureHandler = new OAuthAuthenticationFailureHandler();

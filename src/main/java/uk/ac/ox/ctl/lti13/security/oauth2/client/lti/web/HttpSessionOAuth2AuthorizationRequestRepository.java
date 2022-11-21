@@ -168,11 +168,11 @@ public final class HttpSessionOAuth2AuthorizationRequestRepository
 
     /**
      * Creates a least recently used hashmap.
-     * @link <a href="https://stackoverflow.com/questions/11469045/how-to-limit-the-maximum-size-of-a-map-by-removing-oldest-entries-when-limit-rea">Stackoverflow</a>
+     * @see <a href="https://stackoverflow.com/questions/11469045/how-to-limit-the-maximum-size-of-a-map-by-removing-oldest-entries-when-limit-rea">Stackoverflow</a>
      * @param maxEntries Maximum number of entries in the map
-     * @return a LinkedHashMap that limits its size.
      * @param <K> Key type.
      * @param <V> Value type.
+     * @return a LinkedHashMap that limits its size.
      */
     public static <K, V> Map<K, V> createLRUMap(final int maxEntries) {
         return new LinkedHashMap<K, V>(maxEntries*10/7, 0.7f, true) {

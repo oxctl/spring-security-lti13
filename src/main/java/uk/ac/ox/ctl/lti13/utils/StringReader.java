@@ -12,6 +12,9 @@ public class StringReader {
 
 	/**
 	 * Read a InputStream into a String. Can use readAll() when we are on Java 9 or newer.
+	 * @param inputStream The InputStream to read from.
+	 * @throws IOException If there's problem reading from the input.
+	 * @return The String contents of the stream.
 	 */
 	public static String readString(InputStream inputStream) throws IOException {
 		StringBuilder textBuilder = new StringBuilder();

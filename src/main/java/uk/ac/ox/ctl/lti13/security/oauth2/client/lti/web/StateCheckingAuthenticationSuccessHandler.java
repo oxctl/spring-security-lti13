@@ -113,6 +113,7 @@ public class StateCheckingAuthenticationSuccessHandler extends
 	/**
 	 * Removes temporary authentication-related data which may have been stored in the
 	 * session during the authentication process.
+	 * @param request The HttpServletRequest to clear the authentication from.
 	 */
 	protected final void clearAuthenticationAttributes(HttpServletRequest request) {
 		HttpSession session = request.getSession(false);
