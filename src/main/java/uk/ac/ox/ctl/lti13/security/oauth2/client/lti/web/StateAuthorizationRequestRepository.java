@@ -16,6 +16,8 @@ import java.util.function.BiConsumer;
  * This store uses the state value in the initial request to lookup the request when the client
  * returns. Normally this would expose the login to a CSRF attack but we also check that the
  * remote IP address is the same in an attempt to limit this.
+ * 
+ * @see org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository
  */
 public final class StateAuthorizationRequestRepository implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
 

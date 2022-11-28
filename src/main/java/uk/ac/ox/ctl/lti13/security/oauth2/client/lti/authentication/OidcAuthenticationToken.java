@@ -7,7 +7,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import java.util.Collection;
 
 /**
- * We are validating the state on the client (browser) so we need to be able to return the state back to the client
+ * We are validating the state on the client (browser) so we need to be able to return the state/nonce back to the client
  * and so it needs to exist outside of just the authentication method.
  */
 public class OidcAuthenticationToken extends OAuth2AuthenticationToken {

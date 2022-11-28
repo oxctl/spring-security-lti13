@@ -39,6 +39,7 @@ import uk.ac.ox.ctl.lti13.config.Lti13Configuration;
 import uk.ac.ox.ctl.lti13.lti.Claims;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.authentication.OidcLaunchFlowAuthenticationProvider;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OAuth2LoginAuthenticationFilter;
+import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OptimisticAuthorizationRequestRepository;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -73,7 +74,7 @@ public class Lti13Step3Test {
     private KeyPair keyPair;
 
     @Autowired
-    private AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository;
+    private OptimisticAuthorizationRequestRepository authorizationRequestRepository;
 
 
     @Configuration
@@ -81,14 +82,14 @@ public class Lti13Step3Test {
     public static class CustomLti13Configuration extends Lti13Configuration {
 
         @Autowired
-        private AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository;
+        private OptimisticAuthorizationRequestRepository authorizationRequestRepository;
 
         @Autowired
         private RestOperations restOperations;
 
         @Bean
-        AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
-            return mock(AuthorizationRequestRepository.class);
+        OptimisticAuthorizationRequestRepository authorizationRequestRepository() {
+            return mock(OptimisticAuthorizationRequestRepository.class);
         }
 
         @Override
@@ -105,7 +106,7 @@ public class Lti13Step3Test {
                 }
 
                 @Override
-                protected OAuth2LoginAuthenticationFilter configureLoginFilter(ClientRegistrationRepository clientRegistrationRepository, OidcLaunchFlowAuthenticationProvider oidcLaunchFlowAuthenticationProvider, AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository) {
+                protected OAuth2LoginAuthenticationFilter configureLoginFilter(ClientRegistrationRepository clientRegistrationRepository, OidcLaunchFlowAuthenticationProvider oidcLaunchFlowAuthenticationProvider, OptimisticAuthorizationRequestRepository authorizationRequestRepository) {
                     // This is so that we can put a fake original request into the repository so that the state between
                     // the fake request and out test request will match.
                     OAuth2LoginAuthenticationFilter oAuth2LoginAuthenticationFilter = super.configureLoginFilter(clientRegistrationRepository, oidcLaunchFlowAuthenticationProvider, authorizationRequestRepository);
@@ -116,7 +117,6 @@ public class Lti13Step3Test {
                     return oAuth2LoginAuthenticationFilter;
                 }
             };
-            lti13Configurer.useState(true);
             http.apply(lti13Configurer);
         }
     }
@@ -200,7 +200,8 @@ public class Lti13Step3Test {
                     .subject("subject")
                     .claim("scope", "openid")
                     .audience("test-id")
-                    .expirationTime(Date.from(Instant.now().plusSeconds(10)))
+                    .issueTime(new Date())
+                    .expirationTime(Date.from(Instant.now().plusSeconds(300)))
                     .claim("nonce", "test-nonce")
                     .claim(Claims.LTI_VERSION, "1.3.0")
                     .claim(Claims.MESSAGE_TYPE, "unchecked")

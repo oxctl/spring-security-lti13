@@ -3,6 +3,7 @@ package uk.ac.ox.ctl.lti13.security.oauth2.client.lti.authentication;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import uk.ac.ox.ctl.lti13.lti.Claims;
+import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OptimisticAuthorizationRequestRepository;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.StateCheckingAuthenticationSuccessHandler;
 
 import javax.servlet.http.HttpServletRequest;
@@ -14,10 +15,10 @@ import javax.servlet.http.HttpServletResponse;
 public class TargetLinkUriAuthenticationSuccessHandler extends StateCheckingAuthenticationSuccessHandler {
 
     /**
-     * @param useState if true then use the state parameter for tracking logins.
+     * @param authorizationRequestRepository The authentication repository.
      */
-    public TargetLinkUriAuthenticationSuccessHandler(boolean useState) {
-        super(useState);
+    public TargetLinkUriAuthenticationSuccessHandler(OptimisticAuthorizationRequestRepository authorizationRequestRepository) {
+        super(authorizationRequestRepository);
     }
 
     @Override

@@ -46,8 +46,14 @@ public class StateAuthorizationRedirectHandler implements AuthorizationRedirectH
 			return;
 		}
 		String state = new String(encoder.quoteAsString(authorizationRequest.getState()));
+		// TODO We should be using a LTI Specific Auth request here.
+		String nonce = new String(encoder.quoteAsString((String)authorizationRequest.getAdditionalParameters().get("nonce")));
 		response.setContentType("text/html;charset=UTF-8");
 		PrintWriter writer = response.getWriter();
-		writer.append(htmlTemplate.replaceFirst("@@state@@", state).replaceFirst("@@url@@", url));
+		final String body = htmlTemplate
+				.replaceFirst("@@state@@", state)
+				.replaceFirst("@@url@@", url)
+				.replaceFirst("@@nonce@@", nonce);
+		writer.append(body);
 	}
 }

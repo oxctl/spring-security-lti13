@@ -61,9 +61,10 @@ public class Lti13Step1Test {
     @Test
     public void testStep1Complete() throws Exception {
         this.mockMvc.perform(post("/lti/login_initiation/test")
-                .param("iss", "https://test.com")
-                .param("login_hint", "hint")
-                .param("target_link_uri", "https://localhost/"))
+                    .param("iss", "https://test.com")
+                    .param("login_hint", "hint")
+                    .param("target_link_uri", "https://localhost/")
+                )
                 .andExpect(status().isOk())
                 // Just check that we're putting the right content in the page.
                 .andDo(MockMvcResultHandlers.print())

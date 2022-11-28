@@ -21,7 +21,6 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
@@ -36,6 +35,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.Duration;
 
 /**
  * This {@code Filter} initiates the authorization code grant or implicit grant flow
@@ -81,10 +81,12 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
 	private final ThrowableAnalyzer throwableAnalyzer = new DefaultThrowableAnalyzer();
 	private final RedirectStrategy authorizationRedirectStrategy = new DefaultRedirectStrategy();
 	private OAuth2AuthorizationRequestResolver authorizationRequestResolver;
-	private AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository =
-		new HttpSessionOAuth2AuthorizationRequestRepository();
+	private OptimisticAuthorizationRequestRepository authorizationRequestRepository =
+		new OptimisticAuthorizationRequestRepository(
+				new HttpSessionOAuth2AuthorizationRequestRepository(),
+				new StateAuthorizationRequestRepository(Duration.ofMinutes(1))
+		);
 	private AuthorizationRedirectHandler stateAuthorizationRedirectHandler = new StateAuthorizationRedirectHandler();
-	private boolean useState = false;
 
 	/**
 	 * Constructs an {@code OAuth2AuthorizationRequestRedirectFilter} using the provided parameters.
@@ -116,16 +118,9 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
 	 *
 	 * @param authorizationRequestRepository the repository used for storing {@link OAuth2AuthorizationRequest}'s
 	 */
-	public final void setAuthorizationRequestRepository(AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository) {
+	public final void setAuthorizationRequestRepository(OptimisticAuthorizationRequestRepository authorizationRequestRepository) {
 		Assert.notNull(authorizationRequestRepository, "authorizationRequestRepository cannot be null");
 		this.authorizationRequestRepository = authorizationRequestRepository;
-	}
-
-	/**
-	 * @param useState if true then we should use the state parameter to track logins.
-	 */
-	public void setUseState(boolean useState) {
-		this.useState = useState;
 	}
 
 	@Override
@@ -185,12 +180,12 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
 			this.authorizationRequestRepository.saveAuthorizationRequest(authorizationRequest, request, response);
 		}
 		
-		if (this.useState) {
-			// Want to pass in the authorizationRequest so we can pass the state to the browser.
-			this.stateAuthorizationRedirectHandler.sendRedirect(request, response, authorizationRequest);
-		} else {
+		if (authorizationRequestRepository.hasWorkingSession(request)) {
 			// Standard session based usage so we just do a normal browser redirect.
 			this.authorizationRedirectStrategy.sendRedirect(request, response, authorizationRequest.getAuthorizationRequestUri());
+		} else {
+			// Want to pass in the authorizationRequest so we can pass the state to the browser.
+			this.stateAuthorizationRedirectHandler.sendRedirect(request, response, authorizationRequest);
 		}
 		// We don't need to save the request as the final URL to redirect to is in the claims normally we would save
 		// the current request here.

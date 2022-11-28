@@ -16,8 +16,8 @@ package uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web;
  * limitations under the License.
  */
 
-import com.fasterxml.jackson.core.io.JsonStringEncoder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.WebAttributes;
 import org.springframework.security.web.authentication.AbstractAuthenticationTargetUrlRequestHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -42,17 +42,16 @@ public class StateCheckingAuthenticationSuccessHandler extends
 		AbstractAuthenticationTargetUrlRequestHandler implements
 		AuthenticationSuccessHandler {
 
-	private final boolean useState;
-	private final JsonStringEncoder encoder = JsonStringEncoder.getInstance();
+	private final OptimisticAuthorizationRequestRepository authorizationRequestRepository;
 	private final String htmlTemplate;
 	
 	private String name = "/uk/ac/ox/ctl/lti13/step-3-redirect.html";
 
 	/**
-	 * @param useState if true then use the state parameter for tracking logins.
+	 * @param authorizationRequestRepository
 	 */
-	public StateCheckingAuthenticationSuccessHandler(boolean useState) {
-		this.useState = useState;
+	public StateCheckingAuthenticationSuccessHandler(OptimisticAuthorizationRequestRepository authorizationRequestRepository) {
+		this.authorizationRequestRepository = authorizationRequestRepository;
 		try {
 			htmlTemplate = StringReader.readString(getClass().getResourceAsStream(name));
 		} catch (IOException e) {
@@ -80,7 +79,8 @@ public class StateCheckingAuthenticationSuccessHandler extends
 	protected void handle(HttpServletRequest request, HttpServletResponse response,
 						  Authentication authentication) throws IOException, ServletException {
 		
-		if (!useState) {
+		// If we got this from the Session then just redirect
+		if (authorizationRequestRepository.hasWorkingSession(request)) {
 			super.handle(request, response, authentication);
 			return;
 		}
@@ -99,16 +99,21 @@ public class StateCheckingAuthenticationSuccessHandler extends
 		}
 		OidcAuthenticationToken oidcAuthenticationToken = (OidcAuthenticationToken) authentication;
 		String state = oidcAuthenticationToken.getState();
-
+		String nonce = ((OidcUser)(oidcAuthenticationToken).getPrincipal()).getIdToken().getNonce();
 
 		response.setContentType("text/html;charset=UTF-8");
 		PrintWriter writer = response.getWriter();
-		writer.append(htmlTemplate.replaceFirst("@@state@@", state).replaceFirst("@@url@@", targetUrl));
+		writer.append(htmlTemplate
+				.replaceFirst("@@state@@", state)
+				.replaceFirst("@@url@@", targetUrl)
+				.replaceFirst("@@nonce@@", nonce)
+		);
 	}
 
 	/**
 	 * Removes temporary authentication-related data which may have been stored in the
 	 * session during the authentication process.
+	 * @param request The HttpServletRequest to clear the authentication from.
 	 */
 	protected final void clearAuthenticationAttributes(HttpServletRequest request) {
 		HttpSession session = request.getSession(false);
