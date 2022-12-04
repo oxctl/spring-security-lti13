@@ -32,9 +32,11 @@ import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
+import org.springframework.security.oauth2.jose.jws.JwsAlgorithms;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoderJwkSupport;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestOperations;
@@ -174,11 +176,12 @@ public class OidcLaunchFlowAuthenticationProvider implements AuthenticationProvi
 			}
 			// TODO This should look at the Cache-Control header so to expire old jwtDecoders.
 			// Canvas looks to rotate it's keys monthly.
-			NimbusJwtDecoderJwkSupport nimbusJwtDecoderJwkSupport = new NimbusJwtDecoderJwkSupport(clientRegistration.getProviderDetails().getJwkSetUri());
+			String jwkSetUri = clientRegistration.getProviderDetails().getJwkSetUri();
+			NimbusJwtDecoder.JwkSetUriJwtDecoderBuilder decoderBuilder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).jwsAlgorithm(SignatureAlgorithm.from(JwsAlgorithms.RS256));
 			if (restOperations != null) {
-				nimbusJwtDecoderJwkSupport.setRestOperations(restOperations);
+				decoderBuilder.restOperations(restOperations);
 			}
-			jwtDecoder = nimbusJwtDecoderJwkSupport;
+			jwtDecoder = decoderBuilder.build();
 			this.jwtDecoders.put(clientRegistration.getRegistrationId(), jwtDecoder);
 		}
 		return jwtDecoder;

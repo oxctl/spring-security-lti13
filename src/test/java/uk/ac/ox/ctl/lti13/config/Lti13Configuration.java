@@ -6,11 +6,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.client.RestOperations;
 import uk.ac.ox.ctl.lti13.Lti13Configurer;
 
@@ -20,13 +20,14 @@ import java.security.NoSuchAlgorithmException;
 
 @Configuration
 @EnableWebSecurity
-public class Lti13Configuration extends WebSecurityConfigurerAdapter {
-    
-    @Override
-    public void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().anyRequest().authenticated();
+public class Lti13Configuration {
+
+    @Bean
+    protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests().anyRequest().authenticated();
         Lti13Configurer lti13Configurer = new Lti13Configurer();
         http.apply(lti13Configurer);
+        return http.build();
     }
 
     @Bean
@@ -45,15 +46,14 @@ public class Lti13Configuration extends WebSecurityConfigurerAdapter {
 
         ClientRegistration client = ClientRegistration.withRegistrationId("test")
                 .clientId("test-id")
-                .authorizationGrantType(AuthorizationGrantType.IMPLICIT)
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .scope("openid")
-                .redirectUriTemplate("{baseUrl}/lti/login")
+                .redirectUri("{baseUrl}/lti/login")
                 .authorizationUri(platformUri+ "/auth/new")
                 .tokenUri(platformUri+ "/access_tokens")
                 .jwkSetUri(platformUri+ "/keys.json")
                 .build();
-        ClientRegistrationRepository clientRegistrationRepository = new InMemoryClientRegistrationRepository(client);
-        return clientRegistrationRepository;
+        return new InMemoryClientRegistrationRepository(client);
     }
 }
 
