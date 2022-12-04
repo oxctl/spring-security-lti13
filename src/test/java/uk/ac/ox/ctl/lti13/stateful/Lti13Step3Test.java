@@ -22,10 +22,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -41,9 +41,9 @@ import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OAuth2LoginAuthenticati
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.OptimisticAuthorizationRequestRepository;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web.StateAuthorizationRequestRepository;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.security.KeyPair;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
@@ -108,9 +108,9 @@ public class Lti13Step3Test {
             return new OptimisticAuthorizationRequestRepository(requestRepository, stateAuthorizationRequestRepository);
         }
 
-        @Override
-        public void configure(HttpSecurity http) throws Exception {
-            http.authorizeRequests().anyRequest().authenticated();
+        @Bean
+        protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
+            http.authorizeHttpRequests().anyRequest().authenticated();
             Lti13Configurer lti13Configurer = new Lti13Configurer() {
 
                 @Override
@@ -134,6 +134,7 @@ public class Lti13Step3Test {
                 }
             };
             http.apply(lti13Configurer);
+            return http.build();
         }
     }
 
@@ -226,7 +227,7 @@ public class Lti13Step3Test {
     private OAuth2AuthorizationRequest.Builder createAuthRequest() {
         Map<String, Object> additionalParameters = new HashMap<>();
         additionalParameters.put(OAuth2ParameterNames.REGISTRATION_ID, "test");
-        return OAuth2AuthorizationRequest.implicit()
+        return OAuth2AuthorizationRequest.authorizationCode()
                 .authorizationUri("https://platform.test/auth/new")
                 .redirectUri("https://tool.test/lti/login")
                 .scope("openid")

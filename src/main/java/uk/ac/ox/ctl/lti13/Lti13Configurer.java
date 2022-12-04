@@ -86,7 +86,7 @@ public class Lti13Configurer extends AbstractHttpConfigurer<Lti13Configurer, Htt
         // Allow LTI launches to bypass CSRF protection
         CsrfConfigurer<HttpSecurity> configurer = http.getConfigurer(CsrfConfigurer.class);
         if (configurer != null) {
-            configurer.ignoringAntMatchers(ltiPath + "/**");
+            configurer.ignoringRequestMatchers(ltiPath + "/**");
         }
         // In the future we should use CSP to limit the domains that can embed this tool
         HeadersConfigurer<HttpSecurity> headersConfigurer = http.getConfigurer(HeadersConfigurer.class);

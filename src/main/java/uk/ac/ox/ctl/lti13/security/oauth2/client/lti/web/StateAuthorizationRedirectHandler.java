@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import uk.ac.ox.ctl.lti13.utils.StringReader;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
