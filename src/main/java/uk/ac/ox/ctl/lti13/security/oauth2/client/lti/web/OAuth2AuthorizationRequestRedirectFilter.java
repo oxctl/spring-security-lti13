@@ -180,7 +180,9 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
 			this.authorizationRequestRepository.saveAuthorizationRequest(authorizationRequest, request, response);
 		}
 		
-		if (authorizationRequestRepository.hasWorkingSession(request)) {
+		// Currently in Canvas it always says we support the storage platform, but the mobile apps 
+		// currently don't and so shouldn't send through this parameter.
+		if (authorizationRequestRepository.hasWorkingSession(request) || hasNoPlatform(request)) {
 			// Standard session based usage so we just do a normal browser redirect.
 			this.authorizationRedirectStrategy.sendRedirect(request, response, authorizationRequest.getAuthorizationRequestUri());
 		} else {
@@ -189,6 +191,15 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
 		}
 		// We don't need to save the request as the final URL to redirect to is in the claims normally we would save
 		// the current request here.
+	}
+
+	/**
+	 * Check that the LTI Storage Platform is unavailable.
+	 * @param request The HttpServletRequet to look into.
+	 * @return true if the service launching the LTI tool doesn't support the LTI Storage Platform.
+	 */
+	private boolean hasNoPlatform(HttpServletRequest request) {
+		return request.getParameter("lti_storage_target") == null;
 	}
 
 	private void unsuccessfulRedirectForAuthorization(HttpServletRequest request, HttpServletResponse response,
