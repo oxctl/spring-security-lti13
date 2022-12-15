@@ -43,7 +43,7 @@
             // Mobile apps users will see this the first time as they don't support the storage platform
             // but their LTI launch says they do. However they do support cookies so we should be able
             // to use the session when they complete the LTI launch.
-            showError("Timeout handling LTI authentication (storage), redirecting with anyway.");
+            showError("Timeout handling LTI authentication (storage), redirecting anyway.");
             setTimeout(function() {
                 document.location = url;
             }, 2000)
