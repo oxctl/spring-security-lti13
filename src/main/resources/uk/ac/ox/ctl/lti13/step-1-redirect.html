@@ -40,7 +40,13 @@
 
         // If we don't get any response from the platform show something to the user.
         setTimeout(function() {
-            showError("Timeout handling LTI authentication (storage), please retry");
+            // Mobile apps users will see this the first time as they don't support the storage platform
+            // but their LTI launch says they do. However they do support cookies so we should be able
+            // to use the session when they complete the LTI launch.
+            showError("Timeout handling LTI authentication (storage), redirecting anyway.");
+            setTimeout(function() {
+                document.location = url;
+            }, 2000)
         }, 5000)
 
 

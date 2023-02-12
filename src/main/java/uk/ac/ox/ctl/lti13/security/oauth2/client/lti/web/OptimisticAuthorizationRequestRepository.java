@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 public class OptimisticAuthorizationRequestRepository implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
 
+    public static final String ATTRIBUTE_NAME = OptimisticAuthorizationRequestRepository.class.getName() + "#WORKING_SESSION";
     private final String COOKIE_NAME = "WORKING_COOKIES";
 
     private final AuthorizationRequestRepository<OAuth2AuthorizationRequest> sessionBased;
@@ -24,6 +25,11 @@ public class OptimisticAuthorizationRequestRepository implements AuthorizationRe
     }
 
     public boolean hasWorkingSession(HttpServletRequest request) {
+        // We don't want to wait for the next request to use the session, so as well as looking for cookies we
+        // check for an attribute on the request.
+        if (request.getAttribute(ATTRIBUTE_NAME) != null) {
+            return true;
+        }
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
@@ -35,7 +41,7 @@ public class OptimisticAuthorizationRequestRepository implements AuthorizationRe
         return false;
     }
 
-    public void setWorkingSession(HttpServletResponse response) {
+    public void setWorkingSession(HttpServletRequest request, HttpServletResponse response) {
         // We set our own cookie here because the session is only limited to a short period of time
         // but we would like to use a session even after the original has expired.
         Cookie cookie = new Cookie(COOKIE_NAME, "true");
@@ -46,6 +52,8 @@ public class OptimisticAuthorizationRequestRepository implements AuthorizationRe
         // TODO This should be configurable.
         cookie.setMaxAge(60 * 60 * 24 * 356);
         response.addCookie(cookie);
+        // Mark the current request as having a working session.
+        request.setAttribute(ATTRIBUTE_NAME, true);
     }
 
     @Override
@@ -78,7 +86,7 @@ public class OptimisticAuthorizationRequestRepository implements AuthorizationRe
         // Prioritise the one from the session if it's not null.
         if (sessionRequest != null) {
             // Mark that we got the state from the cookie.
-            setWorkingSession(response);
+            setWorkingSession(request, response);
             return sessionRequest;
         }
         return stateRequest;

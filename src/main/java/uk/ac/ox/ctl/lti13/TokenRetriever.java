@@ -33,7 +33,6 @@ import java.util.*;
  * @see <a href="https://www.imsglobal.org/spec/lti/v1p3/#token-endpoint-claim-and-services">https://www.imsglobal.org/spec/lti/v1p3/#token-endpoint-claim-and-services</a>
  * @see <a href="https://www.imsglobal.org/spec/security/v1p0/#using-json-web-tokens-with-oauth-2-0-client-credentials-grant">https://www.imsglobal.org/spec/security/v1p0/#using-json-web-tokens-with-oauth-2-0-client-credentials-grant</a>
  */
-@Component
 public class TokenRetriever {
 
     private final Logger log = LoggerFactory.getLogger(TokenRetriever.class);

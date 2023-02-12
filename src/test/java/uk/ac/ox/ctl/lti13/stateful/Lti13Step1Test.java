@@ -69,4 +69,18 @@ public class Lti13Step1Test {
                 .andExpect(redirectedUrlPattern("https://platform.test/auth/**"));
     }
 
+
+    @Test
+    public void testStep1NoStorageTarget() throws Exception {
+        // There's no explicit support for the LTI storage platform so we assume that we can't use it and just
+        // redirect
+        this.mockMvc.perform(post("/lti/login_initiation/test")
+                        .param("iss", "https://test.com")
+                        .param("login_hint", "hint")
+                        .param("target_link_uri", "https://localhost/")
+                )
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("https://platform.test/auth/**"));
+    }
+
 }
