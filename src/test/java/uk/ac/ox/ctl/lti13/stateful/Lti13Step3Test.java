@@ -76,7 +76,7 @@ public class Lti13Step3Test {
 
     @Autowired
     @Qualifier("http")
-    private AuthorizationRequestRepository authorizationRequestRepository;
+    private OptimisticAuthorizationRequestRepository authorizationRequestRepository;
 
 
     @Configuration
@@ -90,8 +90,8 @@ public class Lti13Step3Test {
         private RestOperations restOperations;
 
         @Bean(name = "http")
-        AuthorizationRequestRepository authorizationRequestRepository() {
-            return mock(AuthorizationRequestRepository.class);
+        OptimisticAuthorizationRequestRepository authorizationRequestRepository() {
+            return mock(OptimisticAuthorizationRequestRepository.class);
         }
 
         @Bean
@@ -101,7 +101,7 @@ public class Lti13Step3Test {
 
         @Bean
         OptimisticAuthorizationRequestRepository authorizationRequestRepository(
-                @Qualifier("http") AuthorizationRequestRepository requestRepository,
+                @Qualifier("http") OptimisticAuthorizationRequestRepository requestRepository,
                 StateAuthorizationRequestRepository stateAuthorizationRequestRepository
         ) {
             return new OptimisticAuthorizationRequestRepository(requestRepository, stateAuthorizationRequestRepository);
