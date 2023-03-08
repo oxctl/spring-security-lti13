@@ -4,7 +4,7 @@
 
     <groupId>uk.ac.ox.ctl</groupId>
     <artifactId>spring-security-lti13</artifactId>
-    <version>0.1.4</version>
+    <version>0.1.5-SNAPSHOT</version>
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -43,7 +43,7 @@
         <connection>scm:git:ssh://git@github.com/oxctl/spring-security-lti13.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/oxctl/spring-security-lti13.git</developerConnection>
         <url>https://github.com/oxctl/spring-security-lti13</url>
-        <tag>0.1.4</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
