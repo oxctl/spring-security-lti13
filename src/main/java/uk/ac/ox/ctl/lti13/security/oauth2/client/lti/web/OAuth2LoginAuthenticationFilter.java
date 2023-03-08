@@ -141,8 +141,16 @@ public class OAuth2LoginAuthenticationFilter extends AbstractAuthenticationProce
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
         }
 
-        // TODO need to handle error as well here.
-        OIDCLaunchFlowResponse authorizationResponse = OIDCLaunchFlowResponse.success(request.getParameter("id_token"))
+        String error = request.getParameter("error");
+        if (error != null) {
+            String description = request.getParameter("error_description");
+            String uri = request.getParameter("error_uri");
+            OAuth2Error oAuth2Error = new OAuth2Error(error, description, uri);
+            throw new OAuth2AuthenticationException(oAuth2Error, oAuth2Error.toString());
+        }
+
+        String idToken = request.getParameter("id_token");
+        OIDCLaunchFlowResponse authorizationResponse = OIDCLaunchFlowResponse.success(idToken)
                 .state(request.getParameter("state"))
                 .build();
 

@@ -54,6 +54,7 @@ import java.util.Map;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.ac.ox.ctl.lti13.stateful.Lti13Step3Test.CustomLti13Configuration;
@@ -162,7 +163,7 @@ public class Lti13Step3Test {
 
         when(restOperations.exchange(any(), eq(String.class)))
                 .thenReturn(new ResponseEntity<>(jwkSet().toString(), HttpStatus.OK));
-        mockMvc.perform(get("/lti/login").param("id_token", createJWT(claims)).param("state", "state").cookie(new Cookie("WORKING_COOKIES", "true")))
+        mockMvc.perform(post("/lti/login").param("id_token", createJWT(claims)).param("state", "state").cookie(new Cookie("WORKING_COOKIES", "true")))
                 .andExpect(status().is3xxRedirection());
     }
 
@@ -181,7 +182,7 @@ public class Lti13Step3Test {
 
         when(restOperations.exchange(any(), eq(String.class)))
                 .thenReturn(new ResponseEntity<>(jwkSet().toString(), HttpStatus.OK));
-        mockMvc.perform(get("/lti/login").param("id_token", createJWT(claims)).param("state", "state"))
+        mockMvc.perform(post("/lti/login").param("id_token", createJWT(claims)).param("state", "state"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(cookie().exists("WORKING_COOKIES"));
     }
@@ -198,13 +199,27 @@ public class Lti13Step3Test {
 
         when(restOperations.exchange(any(), eq(String.class)))
                 .thenReturn(new ResponseEntity<>(jwkSet().toString(), HttpStatus.OK));
-        mockMvc.perform(get("/lti/login").param("id_token", createJWT(claims)).param("state", "state"))
+        mockMvc.perform(post("/lti/login").param("id_token", createJWT(claims)).param("state", "state"))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void testStep3Error() throws Exception {
+        OAuth2AuthorizationRequest oAuth2AuthorizationRequest = createAuthRequest().build();
+
+        when(authorizationRequestRepository.removeAuthorizationRequest(any(HttpServletRequest.class), any(HttpServletResponse.class)))
+                .thenReturn(oAuth2AuthorizationRequest);
+
+        when(restOperations.exchange(any(), eq(String.class)))
+                .thenReturn(new ResponseEntity<>(jwkSet().toString(), HttpStatus.OK));
+        // Check that when we return an actual error it gets correctly handled.
+        mockMvc.perform(post("/lti/login").param("error", "problem").param("state", "state"))
                 .andExpect(status().is4xxClientError());
     }
 
     @Test
     public void testStep3Empty() throws Exception {
-        this.mockMvc.perform(get("/lti/login"))
+        this.mockMvc.perform(post("/lti/login"))
                 .andExpect(status().is4xxClientError());
     }
 
