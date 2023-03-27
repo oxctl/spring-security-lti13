@@ -161,25 +161,26 @@ public class OidcLaunchFlowAuthenticationProvider implements AuthenticationProvi
 	}
 
 	private JwtDecoder getJwtDecoder(ClientRegistration clientRegistration) {
-		JwtDecoder jwtDecoder = this.jwtDecoders.get(clientRegistration.getRegistrationId());
+		String jwkSetUri = clientRegistration.getProviderDetails().getJwkSetUri();
+		if (!StringUtils.hasText(jwkSetUri)) {
+			OAuth2Error oauth2Error = new OAuth2Error(
+					MISSING_SIGNATURE_VERIFIER_ERROR_CODE,
+					"Failed to find a Signature Verifier for Client Registration: '" +
+							clientRegistration.getRegistrationId() + "'. Check to ensure you have configured the JwkSet URI.",
+					null
+			);
+			throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
+		}
+		JwtDecoder jwtDecoder = this.jwtDecoders.get(jwkSetUri);
 		if (jwtDecoder == null) {
-			if (!StringUtils.hasText(clientRegistration.getProviderDetails().getJwkSetUri())) {
-				OAuth2Error oauth2Error = new OAuth2Error(
-						MISSING_SIGNATURE_VERIFIER_ERROR_CODE,
-						"Failed to find a Signature Verifier for Client Registration: '" +
-								clientRegistration.getRegistrationId() + "'. Check to ensure you have configured the JwkSet URI.",
-						null
-				);
-				throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
-			}
 			// TODO This should look at the Cache-Control header so to expire old jwtDecoders.
 			// Canvas looks to rotate it's keys monthly.
-			NimbusJwtDecoderJwkSupport nimbusJwtDecoderJwkSupport = new NimbusJwtDecoderJwkSupport(clientRegistration.getProviderDetails().getJwkSetUri());
+			NimbusJwtDecoderJwkSupport nimbusJwtDecoderJwkSupport = new NimbusJwtDecoderJwkSupport(jwkSetUri);
 			if (restOperations != null) {
 				nimbusJwtDecoderJwkSupport.setRestOperations(restOperations);
 			}
 			jwtDecoder = nimbusJwtDecoderJwkSupport;
-			this.jwtDecoders.put(clientRegistration.getRegistrationId(), jwtDecoder);
+			this.jwtDecoders.put(jwkSetUri, jwtDecoder);
 		}
 		return jwtDecoder;
 	}
