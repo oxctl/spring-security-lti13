@@ -29,3 +29,6 @@ build/
 config/application.properties
 pom.xml.releaseBackup
 release.properties
+
+# Mac Stuff
+.DS_Store
