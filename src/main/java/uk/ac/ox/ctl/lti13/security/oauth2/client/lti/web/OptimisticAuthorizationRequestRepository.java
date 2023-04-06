@@ -73,12 +73,6 @@ public class OptimisticAuthorizationRequestRepository implements AuthorizationRe
         sessionBased.saveAuthorizationRequest(authorizationRequest, request, response);
     }
 
-    public OAuth2AuthorizationRequest removeAuthorizationRequest(HttpServletRequest request) {
-        // This method is deprecated and should be removed soon.
-        throw new UnsupportedOperationException("We must have the response as well.");
-    }
-
-
     @Override
     public OAuth2AuthorizationRequest removeAuthorizationRequest(HttpServletRequest request, HttpServletResponse response) {
         OAuth2AuthorizationRequest stateRequest = stateBased.removeAuthorizationRequest(request, response);

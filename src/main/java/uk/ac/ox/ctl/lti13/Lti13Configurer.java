@@ -12,6 +12,8 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
+import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import uk.ac.ox.ctl.lti13.security.oauth2.OAuthAuthenticationFailureHandler;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.authentication.OidcLaunchFlowAuthenticationProvider;
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.authentication.TargetLinkUriAuthenticationSuccessHandler;
@@ -37,12 +39,14 @@ import java.util.Collections;
  */
 public class Lti13Configurer extends AbstractHttpConfigurer<Lti13Configurer, HttpSecurity> {
 
-    private String ltiPath = "/lti";
-    private String loginPath = "/login";
-    private String loginInitiationPath = "/login_initiation";
-    private ApplicationEventPublisher applicationEventPublisher;
-    private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
-    private boolean limitIpAddresses;
+    protected String ltiPath = "/lti";
+    protected String loginPath = "/login";
+    protected String loginInitiationPath = "/login_initiation";
+    protected ApplicationEventPublisher applicationEventPublisher;
+    protected GrantedAuthoritiesMapper grantedAuthoritiesMapper;
+    protected boolean limitIpAddresses;
+    protected SecurityContextRepository securityContextRepository;
+
 
     public Lti13Configurer ltiPath(String ltiPath) {
         this.ltiPath = ltiPath;
@@ -70,6 +74,15 @@ public class Lti13Configurer extends AbstractHttpConfigurer<Lti13Configurer, Htt
     }
 
     /**
+     * This security context repository to persist the authentication in. This is useful if you want to use 
+     * HTTP sessions for authentication.
+     */
+    public Lti13Configurer setSecurityContextRepository(SecurityContextRepository securityContextRepository) {
+        this.securityContextRepository = securityContextRepository;
+        return this;
+    }
+
+    /**
      * Using this may cause problems for users who are behind a proxy or NAT setup that uses different IP addresses
      * for different requests, even if they are close together in time.
      * 
@@ -86,12 +99,13 @@ public class Lti13Configurer extends AbstractHttpConfigurer<Lti13Configurer, Htt
         // Allow LTI launches to bypass CSRF protection
         CsrfConfigurer<HttpSecurity> configurer = http.getConfigurer(CsrfConfigurer.class);
         if (configurer != null) {
+            // I'm not sure about this.
             configurer.ignoringRequestMatchers(ltiPath + "/**");
         }
         // In the future we should use CSP to limit the domains that can embed this tool
         HeadersConfigurer<HttpSecurity> headersConfigurer = http.getConfigurer(HeadersConfigurer.class);
         if (headersConfigurer != null) {
-            headersConfigurer.frameOptions().disable();
+            headersConfigurer.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable);
         }
     }
 
@@ -146,6 +160,9 @@ public class Lti13Configurer extends AbstractHttpConfigurer<Lti13Configurer, Htt
         ProviderManager authenticationManager = new ProviderManager(Collections.singletonList(oidcLaunchFlowAuthenticationProvider));
         if (applicationEventPublisher != null) {
             authenticationManager.setAuthenticationEventPublisher(new DefaultAuthenticationEventPublisher(applicationEventPublisher));
+        }
+        if (securityContextRepository != null) {
+            loginFilter.setSecurityContextRepository(securityContextRepository);
         }
         loginFilter.setAuthenticationManager(authenticationManager);
         return loginFilter;

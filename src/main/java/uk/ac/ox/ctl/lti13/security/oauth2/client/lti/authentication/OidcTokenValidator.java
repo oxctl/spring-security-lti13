@@ -65,7 +65,10 @@ final class OidcTokenValidator {
 
 		// 2. The Issuer Identifier for the OpenID Provider (which is typically obtained during Discovery)
 		// MUST exactly match the value of the iss (issuer) Claim.
-		// TODO Depends on gh-4413
+		String requiredIssuer = clientRegistration.getProviderDetails().getIssuerUri();
+		if (requiredIssuer != null && !requiredIssuer.equals(issuer.toExternalForm())) {
+			throwInvalidIdTokenException("Issuer doesn't match issuer in token.");
+		}
 
 		// 3. The Client MUST validate that the aud (audience) Claim contains its client_id value
 		// registered at the Issuer identified by the iss (issuer) Claim as an audience.
@@ -144,7 +147,7 @@ final class OidcTokenValidator {
 		throwInvalidIdTokenException(null);
 	}
 	
-	private static void throwInvalidIdTokenException(String message) {
+	private static void throwInvalidIdTokenException(String message) throws OAuth2AuthenticationException {
 		OAuth2Error invalidIdTokenError = new OAuth2Error(INVALID_ID_TOKEN_ERROR_CODE);
 		throw new OAuth2AuthenticationException(invalidIdTokenError, (message != null)?message:invalidIdTokenError.toString());
 	}

@@ -47,7 +47,7 @@
 
         let stateUuid = uuid();
         postAndHandle(targetFrame, {
-            "subject": "org.imsglobal.lti.get_data",
+            "subject": "lti.get_data",
             "message_id": stateUuid,
             "key": "state_"+ state
         } , platformOrigin, function(event) {
@@ -57,7 +57,7 @@
 
         let nonceUuid = uuid();
         postAndHandle(targetFrame, {
-            "subject": "org.imsglobal.lti.get_data",
+            "subject": "lti.get_data",
             "message_id": nonceUuid,
             "key": "nonce_"+ nonce
         } , platformOrigin, function(event) {

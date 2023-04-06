@@ -16,7 +16,7 @@ import java.io.PrintWriter;
  */
 public class StateAuthorizationRedirectHandler implements AuthorizationRedirectHandler {
 
-	private Logger logger = LoggerFactory.getLogger(StateAuthorizationRedirectHandler.class);
+	private final Logger logger = LoggerFactory.getLogger(StateAuthorizationRedirectHandler.class);
 
 	private final JsonStringEncoder encoder = JsonStringEncoder.getInstance();
 	private final String htmlTemplate;
@@ -42,7 +42,7 @@ public class StateAuthorizationRedirectHandler implements AuthorizationRedirectH
 	public void sendRedirect(HttpServletRequest request, HttpServletResponse response, OAuth2AuthorizationRequest authorizationRequest) throws IOException {
 		String url = authorizationRequest.getAuthorizationRequestUri();
 		if (response.isCommitted()) {
-			logger.debug("Response has already been committed. Unable to redirect to " + url);
+            logger.debug("Response has already been committed. Unable to redirect to {}", url);
 			return;
 		}
 		String state = new String(encoder.quoteAsString(authorizationRequest.getState()));

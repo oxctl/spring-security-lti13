@@ -15,7 +15,7 @@ This [library](https://search.maven.org/artifact/uk.ac.ox.ctl/spring-security-lt
     <dependency>
         <groupId>uk.ac.ox.ctl</groupId>
         <artifactId>spring-security-lti13</artifactId>
-        <version>0.0.4</version>
+        <version>0.1.10</version>
     </dependency>
 
 There is a [demo project](https://github.com/oxctl/spring-security-lti13-demo) built using this library that may be helpful in getting started with the project.
@@ -24,11 +24,20 @@ There is a [demo project](https://github.com/oxctl/spring-security-lti13-demo) b
 
 The project is deployed to the central repository, once ready to release use the release plugin to tag everything:
 
+```bash
     mvn -Prelease release:clean release:prepare
-    
+```
+
 then if that completes successfully a release bundle can be pushed to the staging area of the Sonatype OSS repository with:
 
+```bash
     mvn -Prelease release:perform
+```
     
 We don't automatically close the staged artifacts so after checking that the files are ok you should login to the [repository](https://oss.sonatype.org/) and release it. The version in the README.md should also be updated so that people using the project get the latest version and the demo project should be updated to use the latest version.
 
+## References
+
+ - Learning Tools Interoperability Core Specification - https://www.imsglobal.org/spec/lti/v1p3
+ - 1 EdTech Security Framework - https://www.imsglobal.org/spec/lti/v1p3
+ - OpenID Connect Core - https://openid.net/specs/openid-connect-core-1_0.html

@@ -173,8 +173,8 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
 	private void sendRedirectForAuthorization(HttpServletRequest request, HttpServletResponse response,
                                               OAuth2AuthorizationRequest authorizationRequest) throws IOException {
 
-		// We also want implicit because we want to log the user in as the result of an Implicit Grant and need to keep
-		// the authorization request.
+		// LTI 1.3 is an implicit grant, but the Spring Security codebase doesn't support this anymore.
+		// So we pretend that we are doing an auth code grant.
 		if (AuthorizationGrantType.AUTHORIZATION_CODE.equals(authorizationRequest.getGrantType())) {
 			this.authorizationRequestRepository.saveAuthorizationRequest(authorizationRequest, request, response);
 		}
@@ -204,10 +204,16 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
 	private void unsuccessfulRedirectForAuthorization(HttpServletRequest request, HttpServletResponse response,
                                                       Exception failed) throws IOException, ServletException {
 
-		if (logger.isErrorEnabled()) {
+		if (failed instanceof InvalidInitiationRequestException) {
+			logger.info("Invalid initiation request: "+ failed);
+			response.sendError(HttpStatus.BAD_REQUEST.value(), failed.getMessage());
+		} else if (failed instanceof InvalidClientRegistrationIdException) {
+			logger.info("Invalid registration ID: "+ failed);
+			response.sendError(HttpStatus.NOT_FOUND.value(), failed.getMessage());
+		} else {
 			logger.error("Authorization Request failed: " + failed.toString(), failed);
+			response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
 		}
-		response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
 	}
 
 	private static final class DefaultThrowableAnalyzer extends ThrowableAnalyzer {
