@@ -12,6 +12,7 @@ import org.springframework.security.oauth2.client.registration.InMemoryClientReg
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.client.RestOperations;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import uk.ac.ox.ctl.lti13.Lti13Configurer;
 
 import java.security.KeyPair;
@@ -20,10 +21,12 @@ import java.security.NoSuchAlgorithmException;
 
 @Configuration
 @EnableWebSecurity
+@EnableWebMvc
 public class Lti13Configuration {
 
     @Bean
     protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
+        http.cors().disable();
         http.authorizeHttpRequests().anyRequest().authenticated();
         Lti13Configurer lti13Configurer = new Lti13Configurer();
         http.apply(lti13Configurer);
@@ -41,7 +44,7 @@ public class Lti13Configuration {
     }
 
     @Bean
-    public ClientRegistrationRepository clientRegistrationRepository(KeyPair keyPair) {
+    public ClientRegistrationRepository clientRegistrationRepository() {
         String platformUri = "https://platform.test/";
 
         ClientRegistration client = ClientRegistration.withRegistrationId("test")
