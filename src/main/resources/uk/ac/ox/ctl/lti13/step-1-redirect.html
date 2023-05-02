@@ -52,7 +52,7 @@
 
         let stateUuid = uuid();
         postAndHandle(targetFrame, {
-            "subject": "org.imsglobal.lti.put_data",
+            "subject": "lti.put_data",
             "message_id": stateUuid,
             "key": "state_"+ state,
             "value": state
@@ -63,7 +63,7 @@
 
         let nonceUuid = uuid();
         postAndHandle(targetFrame, {
-            "subject": "org.imsglobal.lti.put_data",
+            "subject": "lti.put_data",
             "message_id": nonceUuid,
             "key": "nonce_"+ nonce,
             "value": nonce
