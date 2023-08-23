@@ -37,12 +37,12 @@ import java.util.Collections;
  */
 public class Lti13Configurer extends AbstractHttpConfigurer<Lti13Configurer, HttpSecurity> {
 
-    private String ltiPath = "/lti";
-    private String loginPath = "/login";
-    private String loginInitiationPath = "/login_initiation";
-    private ApplicationEventPublisher applicationEventPublisher;
-    private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
-    private boolean limitIpAddresses;
+    protected String ltiPath = "/lti";
+    protected String loginPath = "/login";
+    protected String loginInitiationPath = "/login_initiation";
+    protected ApplicationEventPublisher applicationEventPublisher;
+    protected GrantedAuthoritiesMapper grantedAuthoritiesMapper;
+    protected boolean limitIpAddresses;
 
     public Lti13Configurer ltiPath(String ltiPath) {
         this.ltiPath = ltiPath;
