@@ -47,13 +47,13 @@ public class Lti13Step1Test {
     @Test
     public void testStep1Unknown() throws Exception {
         this.mockMvc.perform(post("/lti/login_initiation/unknown"))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().is4xxClientError());
     }
 
     @Test
     public void testStep1Empty() throws Exception {
         this.mockMvc.perform(post("/lti/login_initiation/test"))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().is4xxClientError());
     }
 
     @Test

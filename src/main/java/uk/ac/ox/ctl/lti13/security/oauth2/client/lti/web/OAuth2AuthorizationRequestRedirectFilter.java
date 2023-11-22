@@ -208,7 +208,13 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
 		if (logger.isErrorEnabled()) {
 			logger.error("Authorization Request failed: " + failed.toString(), failed);
 		}
-		response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
+		if (failed instanceof InvalidInitiationRequestException) {
+			response.sendError(HttpStatus.BAD_REQUEST.value(), failed.getMessage());
+		} else if (failed instanceof InvalidClientRegistrationIdException) {
+			response.sendError(HttpStatus.NOT_FOUND.value(), failed.getMessage());
+		} else {
+			response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
+		}
 	}
 
 	private static final class DefaultThrowableAnalyzer extends ThrowableAnalyzer {

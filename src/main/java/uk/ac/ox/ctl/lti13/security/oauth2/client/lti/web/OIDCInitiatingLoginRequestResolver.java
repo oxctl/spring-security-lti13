@@ -87,7 +87,8 @@ public class OIDCInitiatingLoginRequestResolver implements OAuth2AuthorizationRe
 
         ClientRegistration clientRegistration = this.clientRegistrationRepository.findByRegistrationId(registrationId);
         if (clientRegistration == null) {
-            throw new IllegalArgumentException("Invalid Client Registration with Id: " + registrationId);
+            // We use a custom exception here so callers can specifically handle this case.
+            throw new InvalidClientRegistrationIdException("No Client Registration found with ID: " + registrationId);
         }
 
         OAuth2AuthorizationRequest.Builder builder;
@@ -95,6 +96,7 @@ public class OIDCInitiatingLoginRequestResolver implements OAuth2AuthorizationRe
         if (AuthorizationGrantType.IMPLICIT.equals(clientRegistration.getAuthorizationGrantType())) {
             builder = OAuth2AuthorizationRequest.implicit();
         } else {
+            // This is a configuration problem.
             throw new IllegalArgumentException("Invalid Authorization Grant Type ("  +
                     clientRegistration.getAuthorizationGrantType().getValue() +
                     ") for Client Registration with Id: " + clientRegistration.getRegistrationId());
@@ -102,17 +104,17 @@ public class OIDCInitiatingLoginRequestResolver implements OAuth2AuthorizationRe
 
         String iss = request.getParameter("iss");
         if (iss == null) {
-            throw new IllegalArgumentException("Required parameter iss was not supplied.");
+            throw new InvalidInitiationRequestException("Required parameter iss was not supplied.");
         }
 
         String loginHint = request.getParameter("login_hint");
         if (loginHint == null) {
-            throw new IllegalArgumentException("Required parameter login_hint was not supplied.");
+            throw new InvalidInitiationRequestException("Required parameter login_hint was not supplied.");
         }
 
         String targetLinkUri = request.getParameter("target_link_uri");
         if (targetLinkUri == null) {
-            throw new IllegalArgumentException("Required parameter target_link_uri was not supplied");
+            throw new InvalidInitiationRequestException("Required parameter target_link_uri was not supplied");
         }
 
         String redirectUriStr = this.expandRedirectUri(request, clientRegistration, redirectUriAction);
