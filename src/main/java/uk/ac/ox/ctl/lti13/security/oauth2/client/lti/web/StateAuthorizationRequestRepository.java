@@ -7,8 +7,8 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.util.Assert;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.time.Duration;
 import java.util.function.BiConsumer;
 
@@ -87,11 +87,6 @@ public final class StateAuthorizationRequestRepository implements AuthorizationR
         String state = authorizationRequest.getState();
         Assert.hasText(state, "authorizationRequest.state cannot be empty");
         store.put(state, authorizationRequest);
-    }
-
-    @Override
-    public OAuth2AuthorizationRequest removeAuthorizationRequest(HttpServletRequest request) {
-        return removeAuthorizationRequest(request, null);
     }
 
     @Override

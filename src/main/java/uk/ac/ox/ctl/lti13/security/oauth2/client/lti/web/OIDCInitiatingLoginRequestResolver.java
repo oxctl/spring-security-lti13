@@ -12,7 +12,7 @@ import org.springframework.security.web.util.UrlUtils;
 import org.springframework.util.Assert;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -92,9 +92,9 @@ public class OIDCInitiatingLoginRequestResolver implements OAuth2AuthorizationRe
         }
 
         OAuth2AuthorizationRequest.Builder builder;
-        // For now we only support implicit grants.
-        if (AuthorizationGrantType.IMPLICIT.equals(clientRegistration.getAuthorizationGrantType())) {
-            builder = OAuth2AuthorizationRequest.implicit();
+        // For now we only support AUTHORIZATION_CODE grants.
+        if (AuthorizationGrantType.AUTHORIZATION_CODE.equals(clientRegistration.getAuthorizationGrantType())) {
+            builder = OAuth2AuthorizationRequest.authorizationCode();
         } else {
             // This is a configuration problem.
             throw new IllegalArgumentException("Invalid Authorization Grant Type ("  +
@@ -171,7 +171,7 @@ public class OIDCInitiatingLoginRequestResolver implements OAuth2AuthorizationRe
         if (action != null) {
             uriVariables.put("action", action);
         }
-        return UriComponentsBuilder.fromUriString(clientRegistration.getRedirectUriTemplate())
+        return UriComponentsBuilder.fromUriString(clientRegistration.getRedirectUri())
                 .buildAndExpand(uriVariables)
                 .toUriString();
     }
