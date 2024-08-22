@@ -32,9 +32,11 @@ import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
+import org.springframework.security.oauth2.jose.jws.JwsAlgorithms;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoderJwkSupport;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestOperations;
@@ -161,26 +163,26 @@ public class OidcLaunchFlowAuthenticationProvider implements AuthenticationProvi
 	}
 
 	private JwtDecoder getJwtDecoder(ClientRegistration clientRegistration) {
-		String jwkSetUri = clientRegistration.getProviderDetails().getJwkSetUri();
-		if (!StringUtils.hasText(jwkSetUri)) {
-			OAuth2Error oauth2Error = new OAuth2Error(
-					MISSING_SIGNATURE_VERIFIER_ERROR_CODE,
-					"Failed to find a Signature Verifier for Client Registration: '" +
-							clientRegistration.getRegistrationId() + "'. Check to ensure you have configured the JwkSet URI.",
-					null
-			);
-			throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
-		}
-		JwtDecoder jwtDecoder = this.jwtDecoders.get(jwkSetUri);
+		JwtDecoder jwtDecoder = this.jwtDecoders.get(clientRegistration.getRegistrationId());
 		if (jwtDecoder == null) {
+			if (!StringUtils.hasText(clientRegistration.getProviderDetails().getJwkSetUri())) {
+				OAuth2Error oauth2Error = new OAuth2Error(
+						MISSING_SIGNATURE_VERIFIER_ERROR_CODE,
+						"Failed to find a Signature Verifier for Client Registration: '" +
+								clientRegistration.getRegistrationId() + "'. Check to ensure you have configured the JwkSet URI.",
+						null
+				);
+				throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
+			}
 			// TODO This should look at the Cache-Control header so to expire old jwtDecoders.
 			// Canvas looks to rotate it's keys monthly.
-			NimbusJwtDecoderJwkSupport nimbusJwtDecoderJwkSupport = new NimbusJwtDecoderJwkSupport(jwkSetUri);
+			String jwkSetUri = clientRegistration.getProviderDetails().getJwkSetUri();
+			NimbusJwtDecoder.JwkSetUriJwtDecoderBuilder decoderBuilder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).jwsAlgorithm(SignatureAlgorithm.from(JwsAlgorithms.RS256));
 			if (restOperations != null) {
-				nimbusJwtDecoderJwkSupport.setRestOperations(restOperations);
+				decoderBuilder.restOperations(restOperations);
 			}
-			jwtDecoder = nimbusJwtDecoderJwkSupport;
-			this.jwtDecoders.put(jwkSetUri, jwtDecoder);
+			jwtDecoder = decoderBuilder.build();
+			this.jwtDecoders.put(clientRegistration.getRegistrationId(), jwtDecoder);
 		}
 		return jwtDecoder;
 	}

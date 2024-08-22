@@ -20,9 +20,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
@@ -86,7 +86,9 @@ public final class HttpSessionOAuth2AuthorizationRequestRepository
     }
 
     @Override
-    public OAuth2AuthorizationRequest removeAuthorizationRequest(HttpServletRequest request) {
+    public OAuth2AuthorizationRequest removeAuthorizationRequest(HttpServletRequest request,
+                                                                 HttpServletResponse response) {
+        Assert.notNull(response, "response cannot be null");
         Assert.notNull(request, "request cannot be null");
         String stateParameter = this.getStateParameter(request);
         if (stateParameter == null) {
@@ -94,7 +96,7 @@ public final class HttpSessionOAuth2AuthorizationRequestRepository
         }
         Map<String, OAuth2AuthorizationRequest> authorizationRequests = this.getAuthorizationRequests(request);
         OAuth2AuthorizationRequest originalRequest = authorizationRequests.remove(stateParameter);
-        if (authorizationRequests.size() == 0) {
+        if (authorizationRequests.isEmpty()) {
             request.getSession().removeAttribute(this.sessionAttributeName);
         }
         else if (authorizationRequests.size() == 1) {
@@ -105,13 +107,6 @@ public final class HttpSessionOAuth2AuthorizationRequestRepository
             request.getSession().setAttribute(this.sessionAttributeName, authorizationRequests);
         }
         return originalRequest;
-    }
-
-    @Override
-    public OAuth2AuthorizationRequest removeAuthorizationRequest(HttpServletRequest request,
-                                                                 HttpServletResponse response) {
-        Assert.notNull(response, "response cannot be null");
-        return this.removeAuthorizationRequest(request);
     }
 
     /**
@@ -136,8 +131,7 @@ public final class HttpSessionOAuth2AuthorizationRequestRepository
         if (sessionAttributeValue == null) {
             return new HashMap<>();
         }
-        else if (sessionAttributeValue instanceof OAuth2AuthorizationRequest) {
-            OAuth2AuthorizationRequest auth2AuthorizationRequest = (OAuth2AuthorizationRequest) sessionAttributeValue;
+        else if (sessionAttributeValue instanceof OAuth2AuthorizationRequest auth2AuthorizationRequest) {
             Map<String, OAuth2AuthorizationRequest> authorizationRequests = createLRUMap(maxConcurrentLogins);
             authorizationRequests.put(auth2AuthorizationRequest.getState(), auth2AuthorizationRequest);
             return authorizationRequests;
@@ -167,7 +161,7 @@ public final class HttpSessionOAuth2AuthorizationRequestRepository
     }
 
     /**
-     * Creates a least recently used hashmap.
+     * Creates least recently used hashmap.
      * @see <a href="https://stackoverflow.com/questions/11469045/how-to-limit-the-maximum-size-of-a-map-by-removing-oldest-entries-when-limit-rea">Stackoverflow</a>
      * @param maxEntries Maximum number of entries in the map
      * @param <K> Key type.

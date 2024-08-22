@@ -1,6 +1,7 @@
 package uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web;
 
-import javax.servlet.http.HttpServletRequest;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Interface to allow custom ways of resolving the registration ID. Eg by client ID, or deployment ID.

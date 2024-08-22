@@ -24,10 +24,10 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import uk.ac.ox.ctl.lti13.security.oauth2.client.lti.authentication.OidcAuthenticationToken;
 import uk.ac.ox.ctl.lti13.utils.StringReader;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -48,7 +48,7 @@ public class StateCheckingAuthenticationSuccessHandler extends
 	private String name = "/uk/ac/ox/ctl/lti13/step-3-redirect.html";
 
 	/**
-	 * @param authorizationRequestRepository
+	 * @param authorizationRequestRepository The repository holding authorization requests
 	 */
 	public StateCheckingAuthenticationSuccessHandler(OptimisticAuthorizationRequestRepository authorizationRequestRepository) {
 		this.authorizationRequestRepository = authorizationRequestRepository;
@@ -92,13 +92,12 @@ public class StateCheckingAuthenticationSuccessHandler extends
 			return;
 		}
 
-		if (!(authentication instanceof OidcAuthenticationToken)) {
+		if (!(authentication instanceof OidcAuthenticationToken oidcAuthenticationToken)) {
 			logger.debug("Authentication should be OidcAuthenticationToken. Unable to redirect to "
 					+ targetUrl);
 			return;
 		}
-		OidcAuthenticationToken oidcAuthenticationToken = (OidcAuthenticationToken) authentication;
-		String state = oidcAuthenticationToken.getState();
+        String state = oidcAuthenticationToken.getState();
 		String nonce = ((OidcUser)(oidcAuthenticationToken).getPrincipal()).getIdToken().getNonce();
 
 		response.setContentType("text/html;charset=UTF-8");

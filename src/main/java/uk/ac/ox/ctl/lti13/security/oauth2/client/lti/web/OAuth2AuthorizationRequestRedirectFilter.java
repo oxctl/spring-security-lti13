@@ -30,10 +30,10 @@ import org.springframework.security.web.util.ThrowableAnalyzer;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Duration;
 
@@ -171,12 +171,11 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
 	}
 
 	private void sendRedirectForAuthorization(HttpServletRequest request, HttpServletResponse response,
-                                              OAuth2AuthorizationRequest authorizationRequest) throws IOException, ServletException {
+                                              OAuth2AuthorizationRequest authorizationRequest) throws IOException {
 
-		// We also want implicit because we want to log the user in as the result of an Implicit Grant and need to keep
-		// the authorization request.
-		if (AuthorizationGrantType.AUTHORIZATION_CODE.equals(authorizationRequest.getGrantType()) ||
-			AuthorizationGrantType.IMPLICIT.equals(authorizationRequest.getGrantType())) {
+		// LTI 1.3 is an implicit grant, but the Spring Security codebase doesn't support this anymore.
+		// So we pretend that we are doing an auth code grant.
+		if (AuthorizationGrantType.AUTHORIZATION_CODE.equals(authorizationRequest.getGrantType())) {
 			this.authorizationRequestRepository.saveAuthorizationRequest(authorizationRequest, request, response);
 		}
 		

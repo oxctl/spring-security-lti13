@@ -1,18 +1,17 @@
 package uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.crypto.keygen.KeyGenerators;
 import org.springframework.security.crypto.keygen.StringKeyGenerator;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.web.util.UrlUtils;
 import org.springframework.util.Assert;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -25,8 +24,8 @@ import java.util.UUID;
  *
  * As this is currently targeting LTI 1.3 it will come back as a login to the OAuth2 filter.
  *
- * https://openid.net/specs/openid-connect-core-1_0.html#ThirdPartyInitiatedLogin
- * https://www.imsglobal.org/spec/security/v1p0/#step-1-third-party-initiated-login
+ * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#ThirdPartyInitiatedLogin">OpenID ThirdPartyInitiatedLogin</a>
+ * @see <a href="https://www.imsglobal.org/spec/security/v1p0/#step-1-third-party-initiated-login">IMS ThirdPartyInitiatedLogin</a>
  */
 public class OIDCInitiatingLoginRequestResolver implements OAuth2AuthorizationRequestResolver {
 
@@ -92,9 +91,10 @@ public class OIDCInitiatingLoginRequestResolver implements OAuth2AuthorizationRe
         }
 
         OAuth2AuthorizationRequest.Builder builder;
-        // For now we only support implicit grants.
-        if (AuthorizationGrantType.IMPLICIT.equals(clientRegistration.getAuthorizationGrantType())) {
-            builder = OAuth2AuthorizationRequest.implicit();
+        if (LTIAuthorizationGrantType.IMPLICIT.equals(clientRegistration.getAuthorizationGrantType())) {
+            // We are performing an implicit grand but this isn't supported by Spring Security any more
+            // so we pretend it's actually auth code.
+            builder = OAuth2AuthorizationRequest.authorizationCode();
         } else {
             // This is a configuration problem.
             throw new IllegalArgumentException("Invalid Authorization Grant Type ("  +
@@ -115,6 +115,14 @@ public class OIDCInitiatingLoginRequestResolver implements OAuth2AuthorizationRe
         String targetLinkUri = request.getParameter("target_link_uri");
         if (targetLinkUri == null) {
             throw new InvalidInitiationRequestException("Required parameter target_link_uri was not supplied");
+        }
+
+        // The client_id parameter is optional, but if it's supplied check it matches.
+        String clientId = request.getParameter("client_id");
+        if (clientId != null) {
+            if (!clientId.equals(clientRegistration.getClientId())) {
+                throw new IllegalArgumentException("Parameter client_id ("+clientId+") doesn't match the configured registration ("+ clientRegistration.getClientId()+").");
+            }
         }
 
         String redirectUriStr = this.expandRedirectUri(request, clientRegistration, redirectUriAction);
@@ -171,7 +179,7 @@ public class OIDCInitiatingLoginRequestResolver implements OAuth2AuthorizationRe
         if (action != null) {
             uriVariables.put("action", action);
         }
-        return UriComponentsBuilder.fromUriString(clientRegistration.getRedirectUriTemplate())
+        return UriComponentsBuilder.fromUriString(clientRegistration.getRedirectUri())
                 .buildAndExpand(uriVariables)
                 .toUriString();
     }

@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import uk.ac.ox.ctl.lti13.utils.StringReader;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -16,7 +16,7 @@ import java.io.PrintWriter;
  */
 public class StateAuthorizationRedirectHandler implements AuthorizationRedirectHandler {
 
-	private Logger logger = LoggerFactory.getLogger(StateAuthorizationRedirectHandler.class);
+	private final Logger logger = LoggerFactory.getLogger(StateAuthorizationRedirectHandler.class);
 
 	private final JsonStringEncoder encoder = JsonStringEncoder.getInstance();
 	private final String htmlTemplate;
@@ -42,7 +42,7 @@ public class StateAuthorizationRedirectHandler implements AuthorizationRedirectH
 	public void sendRedirect(HttpServletRequest request, HttpServletResponse response, OAuth2AuthorizationRequest authorizationRequest) throws IOException {
 		String url = authorizationRequest.getAuthorizationRequestUri();
 		if (response.isCommitted()) {
-			logger.debug("Response has already been committed. Unable to redirect to " + url);
+            logger.debug("Response has already been committed. Unable to redirect to {}", url);
 			return;
 		}
 		String state = new String(encoder.quoteAsString(authorizationRequest.getState()));
