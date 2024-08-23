@@ -25,13 +25,13 @@ There is a [demo project](https://github.com/oxctl/spring-security-lti13-demo) b
 The project is deployed to the central repository, once ready to release use the release plugin to tag everything:
 
 ```bash
-    mvn -Prelease release:clean release:prepare
+    mvn -Prelease,sonatype release:clean release:prepare
 ```
 
 then if that completes successfully a release bundle can be pushed to the staging area of the Sonatype OSS repository with:
 
 ```bash
-    mvn -Prelease release:perform
+    mvn -Prelease,sonatype release:perform
 ```
     
 We don't automatically close the staged artifacts so after checking that the files are ok you should login to the [repository](https://oss.sonatype.org/) and release it. The version in the README.md should also be updated so that people using the project get the latest version and the demo project should be updated to use the latest version.
