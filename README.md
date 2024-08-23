@@ -1,6 +1,6 @@
 # Spring Security LTI 1.3 Implementation
 
-[![Java CI with Maven](https://github.com/oxctl/spring-security-lti13/actions/workflows/maven.yml/badge.svg)](https://github.com/oxctl/spring-security-lti13/actions/workflows/maven.yml)
+[![Build and publish](https://github.com/oxctl/spring-security-lti13/actions/workflows/push.yml/badge.svg)](https://github.com/oxctl/spring-security-lti13/actions/workflows/push.yml)
 
 This library adds support to Spring Security to allow LTI 1.3 launches to authenticate a user. This is still a work in progress and will be changing substantially in the near future.
 
@@ -15,7 +15,7 @@ This [library](https://search.maven.org/artifact/uk.ac.ox.ctl/spring-security-lt
     <dependency>
         <groupId>uk.ac.ox.ctl</groupId>
         <artifactId>spring-security-lti13</artifactId>
-        <version>0.1.10</version>
+        <version>0.2.0</version>
     </dependency>
 
 There is a [demo project](https://github.com/oxctl/spring-security-lti13-demo) built using this library that may be helpful in getting started with the project.
