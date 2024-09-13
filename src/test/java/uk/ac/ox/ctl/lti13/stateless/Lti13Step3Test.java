@@ -151,6 +151,24 @@ public class Lti13Step3Test {
     }
 
     @Test
+    public void testStep3SignedTokenAnon() throws Exception {
+        // When it's an anonymous request there's no subject in the claims.
+        JWTClaimsSet claims = createClaims().subject(null).build();
+
+        OAuth2AuthorizationRequest oAuth2AuthorizationRequest = createAuthRequest().build();
+
+        when(authorizationRequestRepository.removeAuthorizationRequest(any(HttpServletRequest.class), any(HttpServletResponse.class)))
+                .thenReturn(oAuth2AuthorizationRequest);
+
+        when(restOperations.exchange(any(), eq(String.class)))
+                .thenReturn(new ResponseEntity<>(jwkSet().toString(), HttpStatus.OK));
+        mockMvc.perform(get("/lti/login").param("id_token", createJWT(claims)).param("state", "state-123-abc"))
+                // Check that we have correct URL and state in the HTML
+                .andExpect(content().string(containsString("state-123-abc")))
+                .andExpect(content().string(containsString("https://target.link/uri")));
+    }
+
+    @Test
     public void testStep3WrongVersion() throws Exception {
         // Remove the LTI Version.
         JWTClaimsSet claims = createClaims().claim(Claims.LTI_VERSION, null).build();

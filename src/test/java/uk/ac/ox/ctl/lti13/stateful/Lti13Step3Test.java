@@ -168,6 +168,24 @@ public class Lti13Step3Test {
     }
 
     @Test
+    public void testStep3SignedTokenAnonymous() throws Exception {
+        // When it's an anonymous request there's no subject in the claims.
+        JWTClaimsSet claims = createClaims().subject(null).build();
+
+        OAuth2AuthorizationRequest oAuth2AuthorizationRequest = createAuthRequest().build();
+
+        when(authorizationRequestRepository.loadAuthorizationRequest(any(HttpServletRequest.class)))
+                .thenReturn(oAuth2AuthorizationRequest);
+        when(authorizationRequestRepository.removeAuthorizationRequest(any(HttpServletRequest.class), any(HttpServletResponse.class)))
+                .thenReturn(oAuth2AuthorizationRequest);
+
+        when(restOperations.exchange(any(), eq(String.class)))
+                .thenReturn(new ResponseEntity<>(jwkSet().toString(), HttpStatus.OK));
+        mockMvc.perform(post("/lti/login").param("id_token", createJWT(claims)).param("state", "state").cookie(new Cookie("WORKING_COOKIES", "true")))
+                .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
     public void testStep3SignedTokenNoCookie() throws Exception {
         // Here we haven't already marked the browser as having a working session based on cookies, but we 
         // do manage to retrieve the 

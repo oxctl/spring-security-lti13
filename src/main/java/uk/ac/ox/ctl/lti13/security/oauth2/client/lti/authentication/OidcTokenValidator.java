@@ -46,10 +46,7 @@ final class OidcTokenValidator {
 		if (issuer == null) {
 			throwInvalidIdTokenException("No issuer in token.");
 		}
-		String subject = idToken.getSubject();
-		if (subject == null) {
-			throwInvalidIdTokenException("No subject in token.");
-		}
+		// We don't validate that there's a subject claim as an anonymous launch doesn't include one.
 		List<String> audience = idToken.getAudience();
 		if (CollectionUtils.isEmpty(audience)) {
 			throwInvalidIdTokenException("No audience in token.");
