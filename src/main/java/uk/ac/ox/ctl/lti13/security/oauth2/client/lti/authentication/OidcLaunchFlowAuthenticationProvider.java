@@ -29,7 +29,6 @@ import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
-import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.security.oauth2.jose.jws.JwsAlgorithms;
@@ -41,6 +40,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestOperations;
 import uk.ac.ox.ctl.lti13.security.oauth2.core.endpoint.OIDCLaunchFlowResponse;
+import uk.ac.ox.ctl.lti13.security.oauth2.core.user.LtiOauth2User;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -114,7 +114,7 @@ public class OidcLaunchFlowAuthenticationProvider implements AuthenticationProvi
 		Set<GrantedAuthority> authorities = new HashSet<>();
 		OidcUserAuthority authority = new OidcUserAuthority(idToken, null);
 		authorities.add(authority);
-		DefaultOidcUser oidcUser = new DefaultOidcUser(authorities, idToken);
+		LtiOauth2User oidcUser = new LtiOauth2User(authorities, idToken);
 
 		Collection<? extends GrantedAuthority> mappedAuthorities =
 			this.authoritiesMapper.mapAuthorities(oidcUser.getAuthorities());
