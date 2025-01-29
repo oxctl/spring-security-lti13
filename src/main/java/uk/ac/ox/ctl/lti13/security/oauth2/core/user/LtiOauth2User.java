@@ -8,6 +8,7 @@ import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.util.Assert;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -21,7 +22,7 @@ import java.util.TreeSet;
  * LTI launches can happen when there isn't a user logged in. In this situation
  * there isn't a subject claim and so we need to support this.
  */
-public class LtiOauth2User implements OidcUser {
+public class LtiOauth2User implements OidcUser, Serializable {
     
     public static final String ANONYMOUS = "anonymous";
 
