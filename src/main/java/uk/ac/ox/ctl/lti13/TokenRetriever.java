@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.http.converter.FormHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
@@ -48,6 +49,11 @@ public class TokenRetriever {
         restTemplate = new RestTemplate(Arrays.asList(
                 new FormHttpMessageConverter(), new OAuth2AccessTokenResponseHttpMessageConverter()));
         restTemplate.setErrorHandler(new OAuth2ErrorResponseErrorHandler());
+    }
+
+    public void addHttpMessageConverter(HttpMessageConverter<?> converter) {
+        Objects.requireNonNull(converter, "You must supply a converter.");
+        this.restTemplate.getMessageConverters().add(converter);
     }
 
     public void setJwtLifetime(int jwtLifetime) {
