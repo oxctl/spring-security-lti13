@@ -16,7 +16,7 @@ This [library](https://search.maven.org/artifact/uk.ac.ox.ctl/spring-security-lt
     <dependency>
         <groupId>uk.ac.ox.ctl</groupId>
         <artifactId>spring-security-lti13</artifactId>
-        <version>0.2.0</version>
+        <version>0.3.2</version>
     </dependency>
 ```
 
