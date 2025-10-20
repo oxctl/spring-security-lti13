@@ -20,19 +20,18 @@ public class StateAuthorizationRedirectHandler implements AuthorizationRedirectH
 
 	private final JsonStringEncoder encoder = JsonStringEncoder.getInstance();
 	private final String htmlTemplate;
+	private final String library;
 
-	private String name = "/uk/ac/ox/ctl/lti13/step-1-redirect.html";
+	private final String htmlName = "/uk/ac/ox/ctl/lti13/step-1-redirect.html";
+	private final String libraryName = "/uk/ac/ox/ctl/lti13/library.js";
 
 	public StateAuthorizationRedirectHandler() {
 		try {
-			htmlTemplate = StringReader.readString(getClass().getResourceAsStream(name));
+			htmlTemplate = StringReader.readString(getClass().getResourceAsStream(htmlName));
+			library = StringReader.readString(getClass().getResourceAsStream(libraryName));
 		} catch (IOException e) {
-			throw new IllegalStateException("Failed to read "+ name, e);
+			throw new IllegalStateException("Failed to resource. "+e.getMessage() , e);
 		}
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	/**
@@ -53,7 +52,8 @@ public class StateAuthorizationRedirectHandler implements AuthorizationRedirectH
 		final String body = htmlTemplate
 				.replaceFirst("@@state@@", state)
 				.replaceFirst("@@url@@", url)
-				.replaceFirst("@@nonce@@", nonce);
+				.replaceFirst("@@nonce@@", nonce)
+				.replaceFirst("// @@library@@", library);
 		writer.append(body);
 	}
 }
