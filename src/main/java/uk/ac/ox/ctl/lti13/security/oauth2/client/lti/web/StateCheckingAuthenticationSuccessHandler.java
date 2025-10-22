@@ -58,7 +58,7 @@ public class StateCheckingAuthenticationSuccessHandler extends
 			htmlTemplate = StringReader.readString(getClass().getResourceAsStream(htmlName));
 			library = StringReader.readString(getClass().getResourceAsStream(libraryName));
 		} catch (IOException e) {
-			throw new IllegalStateException("Failed to read. " + e.getMessage(), e);
+			throw new IllegalStateException("Failed to initialise resources. " + e.getMessage(), e);
 		}
 	}
 

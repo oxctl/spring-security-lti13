@@ -30,7 +30,7 @@ public class StateAuthorizationRedirectHandler implements AuthorizationRedirectH
 			htmlTemplate = StringReader.readString(getClass().getResourceAsStream(htmlName));
 			library = StringReader.readString(getClass().getResourceAsStream(libraryName));
 		} catch (IOException e) {
-			throw new IllegalStateException("Failed to resource. "+e.getMessage() , e);
+			throw new IllegalStateException("Failed to initialise resources. " + e.getMessage(), e);
 		}
 	}
 
