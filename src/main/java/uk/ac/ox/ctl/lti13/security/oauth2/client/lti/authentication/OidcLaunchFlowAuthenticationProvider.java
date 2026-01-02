@@ -173,17 +173,14 @@ public class OidcLaunchFlowAuthenticationProvider implements AuthenticationProvi
 			);
 			throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
 		}
-		JwtDecoder jwtDecoder = this.jwtDecoders.get(jwkSetUri);
-		if (jwtDecoder == null) {
-			// TODO This should look at the Cache-Control header so to expire old jwtDecoders.
-			// Canvas looks to rotate it's keys monthly.
-			NimbusJwtDecoder.JwkSetUriJwtDecoderBuilder decoderBuilder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).jwsAlgorithm(SignatureAlgorithm.from(JwsAlgorithms.RS256));
+		// TODO This should look at the Cache-Control header so to expire old jwtDecoders.
+		// Canvas looks to rotate it's keys monthly.
+		return this.jwtDecoders.computeIfAbsent(jwkSetUri, uri -> {
+			NimbusJwtDecoder.JwkSetUriJwtDecoderBuilder decoderBuilder = NimbusJwtDecoder.withJwkSetUri(uri).jwsAlgorithm(SignatureAlgorithm.from(JwsAlgorithms.RS256));
 			if (restOperations != null) {
 				decoderBuilder.restOperations(restOperations);
 			}
-			jwtDecoder = decoderBuilder.build();
-			this.jwtDecoders.put(jwkSetUri, jwtDecoder);
-		}
-		return jwtDecoder;
+			return decoderBuilder.build();
+		});
 	}
 }
