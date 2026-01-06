@@ -163,27 +163,24 @@ public class OidcLaunchFlowAuthenticationProvider implements AuthenticationProvi
 	}
 
 	private JwtDecoder getJwtDecoder(ClientRegistration clientRegistration) {
-		JwtDecoder jwtDecoder = this.jwtDecoders.get(clientRegistration.getRegistrationId());
-		if (jwtDecoder == null) {
-			if (!StringUtils.hasText(clientRegistration.getProviderDetails().getJwkSetUri())) {
-				OAuth2Error oauth2Error = new OAuth2Error(
-						MISSING_SIGNATURE_VERIFIER_ERROR_CODE,
-						"Failed to find a Signature Verifier for Client Registration: '" +
-								clientRegistration.getRegistrationId() + "'. Check to ensure you have configured the JwkSet URI.",
-						null
-				);
-				throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
-			}
-			// TODO This should look at the Cache-Control header so to expire old jwtDecoders.
-			// Canvas looks to rotate it's keys monthly.
-			String jwkSetUri = clientRegistration.getProviderDetails().getJwkSetUri();
-			NimbusJwtDecoder.JwkSetUriJwtDecoderBuilder decoderBuilder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).jwsAlgorithm(SignatureAlgorithm.from(JwsAlgorithms.RS256));
+		final String jwkSetUri = clientRegistration.getProviderDetails().getJwkSetUri();
+		if (!StringUtils.hasText(jwkSetUri)) {
+			OAuth2Error oauth2Error = new OAuth2Error(
+					MISSING_SIGNATURE_VERIFIER_ERROR_CODE,
+					"Failed to find a Signature Verifier for Client Registration: '" +
+							clientRegistration.getRegistrationId() + "'. Check to ensure you have configured the JwkSet URI.",
+					null
+			);
+			throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
+		}
+		// TODO This should look at the Cache-Control header so to expire old jwtDecoders.
+		// Canvas looks to rotate its keys monthly.
+		return this.jwtDecoders.computeIfAbsent(jwkSetUri, uri -> {
+			NimbusJwtDecoder.JwkSetUriJwtDecoderBuilder decoderBuilder = NimbusJwtDecoder.withJwkSetUri(uri).jwsAlgorithm(SignatureAlgorithm.from(JwsAlgorithms.RS256));
 			if (restOperations != null) {
 				decoderBuilder.restOperations(restOperations);
 			}
-			jwtDecoder = decoderBuilder.build();
-			this.jwtDecoders.put(clientRegistration.getRegistrationId(), jwtDecoder);
-		}
-		return jwtDecoder;
+			return decoderBuilder.build();
+		});
 	}
 }
