@@ -9,7 +9,9 @@ import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Checks to see if we already have a valid HTTP Session containing a token, if so we store details of the login
- * in the HTTP Session, otherwise we use store based on the state.
+ * in the HTTP Session, otherwise we use store based on the state. When debugging things you can tell on the client if
+ * the login was done using the session as the redirect to the tool in step 3 is done as a HTTP 302 redirect, if the 
+ * check is done by the browser using LTI Storage the step 3 is a HTTP 200 response where JS does the redirect.
  */
 public class OptimisticAuthorizationRequestRepository implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
 
@@ -48,6 +50,7 @@ public class OptimisticAuthorizationRequestRepository implements AuthorizationRe
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setPath("/");
+        cookie.setAttribute("SameSite", "None");
         // Set the cookie for 1 year.
         // TODO This should be configurable.
         cookie.setMaxAge(60 * 60 * 24 * 356);
