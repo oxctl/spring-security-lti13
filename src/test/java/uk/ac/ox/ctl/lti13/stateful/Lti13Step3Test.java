@@ -52,6 +52,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -202,7 +205,16 @@ public class Lti13Step3Test {
                 .thenReturn(new ResponseEntity<>(jwkSet().toString(), HttpStatus.OK));
         mockMvc.perform(post("/lti/login").param("id_token", createJWT(claims)).param("state", "state"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(cookie().exists("WORKING_COOKIES"));
+                .andExpect(cookie().exists("WORKING_COOKIES"))
+                .andExpect(result -> {
+                    Cookie cookie = result.getResponse().getCookie("WORKING_COOKIES");
+                    assertNotNull(cookie);
+                    assertEquals("true", cookie.getValue());
+                    assertEquals("/", cookie.getPath());
+                    assertTrue(cookie.getSecure());
+                    assertTrue(cookie.isHttpOnly());
+                    assertEquals("None", cookie.getAttribute("SameSite"));
+                });
     }
 
     @Test
