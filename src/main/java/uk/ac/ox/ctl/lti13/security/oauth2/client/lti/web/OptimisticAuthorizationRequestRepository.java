@@ -53,7 +53,7 @@ public class OptimisticAuthorizationRequestRepository implements AuthorizationRe
         cookie.setAttribute("SameSite", "None");
         // Set the cookie for 1 year.
         // TODO This should be configurable.
-        cookie.setMaxAge(60 * 60 * 24 * 356);
+        cookie.setMaxAge(60 * 60 * 24 * 365);
         response.addCookie(cookie);
         // Mark the current request as having a working session.
         request.setAttribute(ATTRIBUTE_NAME, true);
