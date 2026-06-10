@@ -8,10 +8,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * Checks to see if we already have a valid HTTP Session containing a token, if so we store details of the login
- * in the HTTP Session, otherwise we use store based on the state. When debugging things you can tell on the client if
- * the login was done using the session as the redirect to the tool in step 3 is done as a HTTP 302 redirect, if the 
- * check is done by the browser using LTI Storage the step 3 is a HTTP 200 response where JS does the redirect.
+ * Checks whether a valid HTTP session already contains a token. If so, we store the login details in the HTTP session;
+ * otherwise, we use state-based storage. When debugging on the client, if login uses the session then step 3 returns
+ * an HTTP 302 redirect to the tool. If login uses LTI storage in the browser, then step 3 returns HTTP 200 and
+ * JavaScript performs the redirect.
  */
 public class OptimisticAuthorizationRequestRepository implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
 
