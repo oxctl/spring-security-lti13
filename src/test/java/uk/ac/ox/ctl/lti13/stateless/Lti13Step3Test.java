@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -92,7 +93,7 @@ public class Lti13Step3Test {
 
         @Bean
         protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
-            http.authorizeHttpRequests().anyRequest().authenticated();
+            http.authorizeHttpRequests(auth -> auth.anyRequest().authenticated());
             Lti13Configurer lti13Configurer = new Lti13Configurer() {
 
                 @Override
@@ -115,7 +116,7 @@ public class Lti13Step3Test {
                     return oAuth2LoginAuthenticationFilter;
                 }
             };
-            http.apply(lti13Configurer);
+            http.with(lti13Configurer, Customizer.withDefaults());
             return http.build();
         }
     }

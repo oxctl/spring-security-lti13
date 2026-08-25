@@ -1,9 +1,9 @@
 package uk.ac.ox.ctl.lti13.security.oauth2.client.lti.web;
 
-import com.fasterxml.jackson.core.io.JsonStringEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+import tools.jackson.core.io.JsonStringEncoder;
 import uk.ac.ox.ctl.lti13.utils.StringReader;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,9 +45,9 @@ public class StateAuthorizationRedirectHandler implements AuthorizationRedirectH
             logger.debug("Response has already been committed. Unable to redirect to {}", url);
 			return;
 		}
-		String state = new String(encoder.quoteAsString(authorizationRequest.getState()));
+		String state = new String(encoder.quoteAsCharArray(authorizationRequest.getState()));
 		// TODO We should be using a LTI Specific Auth request here.
-		String nonce = new String(encoder.quoteAsString((String)authorizationRequest.getAdditionalParameters().get("nonce")));
+		String nonce = new String(encoder.quoteAsCharArray((String)authorizationRequest.getAdditionalParameters().get("nonce")));
 		response.setContentType("text/html;charset=UTF-8");
 		PrintWriter writer = response.getWriter();
 		final String body = htmlTemplate
