@@ -100,9 +100,9 @@
             <artifactId>spring-security-oauth2-jose</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
+            <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.17.0</version>
+            <version>3.2.2</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -111,9 +111,11 @@
             <version>2.1.0</version>
         </dependency>
         <dependency>
-            <groupId>jakarta.platform</groupId>
-            <artifactId>jakarta.jakartaee-api</artifactId>
-            <version>10.0.0</version>
+            <!-- The only Jakarta EE API we use, and the container supplies it at runtime -->
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>6.1.0</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
