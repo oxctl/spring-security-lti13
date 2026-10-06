@@ -10,43 +10,19 @@
 <script>
     function showError(message) {
         const h1 = document.createElement("h1")
-        h1.textContent = "Error: "+ message
+        h1.textContent = "Error: " + message
         document.body.append(h1)
     }
 
     const state = "@@state@@";
     const url = "@@url@@";
     const nonce = "@@nonce@@";
-
-    // Have we set the values in the storage?
-    let setState = false
-    let setNonce = false
     
-    try {
-        /**
-         * Attempt to generate a uuid, falls back to a random string on 
-         * @returns {string}
-         */
-        function uuid() {
-            if (self.crypto && self.crypto.randomUUID) {
-                return self.crypto.randomUUID();
-            } else {
-                // IE 11 Doesn't have randomUUID so fall back to short random string.
-                return (Math.random() + 1).toString(36).substring(2, 5)
-            }
-        }
-        const platformOrigin = "*"; // Canvas doesn't support origin.
-        let targetFrame = window.parent || window.opener
-        
-        if (targetFrame === window) {
-            // We don't have anywhere to send the message to, so we can't do anything.
-            // This seems to happen with Canvas when the LTI launch is done in a new window/tab.
-            console.log('We cannot store state so relying on cookies (which might be blocked)');
-            document.location = url;
-        }
+    // @@library@@
 
+    try {
         // If we don't get any response from the platform show something to the user.
-        setTimeout(function() {
+        setTimeout(function () {
             // Mobile apps users will see this the first time as they don't support the storage platform
             // but their LTI launch says they do. However they do support cookies so we should be able
             // to use the session when they complete the LTI launch.
@@ -56,69 +32,28 @@
             }, 2000)
         }, 5000)
 
+        let setState = false
+        let setNonce = false
 
-        let stateUuid = uuid();
-        postAndHandle(targetFrame, {
-            "subject": "lti.put_data",
-            "message_id": stateUuid,
-            "key": "state_"+ state,
-            "value": state
-        } , platformOrigin, function(event) {
-            setState = true
-            redirectIfValid()
-        })
+        const postMessage = new LtiPostMessageClient()
 
-        let nonceUuid = uuid();
-        postAndHandle(targetFrame, {
-            "subject": "lti.put_data",
-            "message_id": nonceUuid,
-            "key": "nonce_"+ nonce,
-            "value": nonce
-        } , platformOrigin, function(event) {
-            setNonce = true
-            redirectIfValid()
-        })
+        postMessage.setData("state_" + state, state)
+            .then(() => {
+                setState = true
+                redirectIfValid()
+            })
+            .catch((error) => {
+                showError("Error setting state: " + error.message)
+            })
+        postMessage.setData("nonce_" + nonce, nonce)
+            .then(() => {
+                setNonce = true
+                redirectIfValid()
+            })
+            .catch((error) => {
+                showError("Error setting nonce: " + error.message)
+            })
 
-        /**
-         * Send a message and handle its response.
-         * @param target 
-         * @param message
-         * @param origin
-         * @param onResponse
-         */
-        function postAndHandle(target, message, origin, onResponse) {
-            function handler(event) {
-                // This isn't a message we're expecting
-                if (typeof event.data !== "object"){
-                    return;
-                }
-                // Validate it's the response type you expect
-                if (event.data.subject !== message.subject+ ".response") {
-                    return;
-                }
-                // Validate the message id matches the id you sent
-                if (event.data.message_id !== message.message_id) {
-                    return;
-                }
-                // Validate that the event's origin is the same as the derived platform origin
-                if (origin !== '*' && event.origin !== origin) {
-                    return;
-                }
-                // handle errors
-                if (event.data.error){
-                    // handle errors (message and code)
-                    console.log(event.data.error)
-                    return;
-                }
-                onResponse(event)
-                // Cleanup now we've got our message.
-                window.removeEventListener('message', handler)
-            }
-            window.addEventListener('message', handler); 
-            // Now the handler is setup we can send our message.
-            target.postMessage(message, origin);
-        }
-        
         function redirectIfValid() {
             // Only redirect once we've had confirmation both are set
             if (setNonce && setState) {
