@@ -44,8 +44,10 @@ public class StateCheckingAuthenticationSuccessHandler extends
 
 	private final OptimisticAuthorizationRequestRepository authorizationRequestRepository;
 	private final String htmlTemplate;
+	private final String library;
 	
-	private String name = "/uk/ac/ox/ctl/lti13/step-3-redirect.html";
+	private final String htmlName = "/uk/ac/ox/ctl/lti13/step-3-redirect.html";
+	private final String libraryName = "/uk/ac/ox/ctl/lti13/library.js";
 
 	/**
 	 * @param authorizationRequestRepository The repository holding authorization requests
@@ -53,14 +55,11 @@ public class StateCheckingAuthenticationSuccessHandler extends
 	public StateCheckingAuthenticationSuccessHandler(OptimisticAuthorizationRequestRepository authorizationRequestRepository) {
 		this.authorizationRequestRepository = authorizationRequestRepository;
 		try {
-			htmlTemplate = StringReader.readString(getClass().getResourceAsStream(name));
+			htmlTemplate = StringReader.readString(getClass().getResourceAsStream(htmlName));
+			library = StringReader.readString(getClass().getResourceAsStream(libraryName));
 		} catch (IOException e) {
-			throw new IllegalStateException("Failed to read " + name, e);
+			throw new IllegalStateException("Failed to initialise resources. " + e.getMessage(), e);
 		}
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	/**
@@ -106,6 +105,7 @@ public class StateCheckingAuthenticationSuccessHandler extends
 				.replaceFirst("@@state@@", state)
 				.replaceFirst("@@url@@", targetUrl)
 				.replaceFirst("@@nonce@@", nonce)
+				.replaceFirst("// @@library@@", library)
 		);
 	}
 

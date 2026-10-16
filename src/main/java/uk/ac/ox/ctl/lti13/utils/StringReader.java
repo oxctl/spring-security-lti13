@@ -19,7 +19,7 @@ public class StringReader {
 	public static String readString(InputStream inputStream) throws IOException {
 		StringBuilder textBuilder = new StringBuilder();
 		try (Reader reader = new BufferedReader(new InputStreamReader
-				(inputStream, Charset.forName(StandardCharsets.UTF_8.name())))) {
+				(inputStream, StandardCharsets.UTF_8))) {
 			char[] buffer = new char[1024];
 			int len;
 			while ((len = reader.read(buffer)) != -1) {
