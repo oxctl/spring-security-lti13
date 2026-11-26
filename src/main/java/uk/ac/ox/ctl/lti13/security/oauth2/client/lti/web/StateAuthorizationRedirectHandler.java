@@ -41,10 +41,6 @@ public class StateAuthorizationRedirectHandler implements AuthorizationRedirectH
 	 */
 	public void sendRedirect(HttpServletRequest request, HttpServletResponse response, OAuth2AuthorizationRequest authorizationRequest) throws IOException {
 		String url = authorizationRequest.getAuthorizationRequestUri();
-		if (response.isCommitted()) {
-            logger.debug("Response has already been committed. Unable to redirect to {}", url);
-			return;
-		}
 		String state = new String(encoder.quoteAsCharArray(authorizationRequest.getState()));
 		// TODO We should be using a LTI Specific Auth request here.
 		String nonce = new String(encoder.quoteAsCharArray((String)authorizationRequest.getAdditionalParameters().get("nonce")));
