@@ -170,7 +170,7 @@ public class OIDCInitiatingLoginRequestResolver implements OAuth2AuthorizationRe
         // Used in -> CommonOAuth2Provider.DEFAULT_REDIRECT_URL = "{baseUrl}/{action}/oauth2/code/{registrationId}"
         Map<String, String> uriVariables = new HashMap<>();
         uriVariables.put("registrationId", clientRegistration.getRegistrationId());
-        String baseUrl = UriComponentsBuilder.fromHttpUrl(UrlUtils.buildFullRequestUrl(request))
+        String baseUrl = UriComponentsBuilder.fromUriString(UrlUtils.buildFullRequestUrl(request))
                 .replaceQuery(null)
                 .replacePath(request.getContextPath())
                 .build()

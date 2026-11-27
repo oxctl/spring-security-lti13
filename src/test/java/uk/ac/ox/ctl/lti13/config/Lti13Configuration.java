@@ -3,6 +3,7 @@ package uk.ac.ox.ctl.lti13.config;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -25,9 +26,9 @@ public class Lti13Configuration {
 
     @Bean
     protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests().anyRequest().authenticated();
+        http.authorizeHttpRequests(auth -> auth.anyRequest().authenticated());
         Lti13Configurer lti13Configurer = new Lti13Configurer();
-        http.apply(lti13Configurer);
+        http.with(lti13Configurer, Customizer.withDefaults());
         return http.build();
     }
 
